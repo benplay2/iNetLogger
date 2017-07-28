@@ -12,9 +12,12 @@ public class NetworkConnection {
 
 	private InetAddress[] addresses;
 	private int timeout = 5000; //timeout in ms
+	private boolean prevConnected;
+	private String addressString;
 
 	public NetworkConnection(String networkAddress) throws UnknownHostException{
 		setAddress(networkAddress);
+		this.isConnected();
 	}
 
 	/*
@@ -23,7 +26,7 @@ public class NetworkConnection {
 	public boolean isConnected(){
 		boolean connected = false;
 
-		for (InetAddress curAddress : getAddress()){
+		for (InetAddress curAddress : getAddresses()){
 			try {
 				if (curAddress.isReachable(getTimeout())){
 					connected = true;
@@ -33,16 +36,24 @@ public class NetworkConnection {
 				e.printStackTrace();
 			}
 		}
+		this.setPrevConnected(connected);
 		return connected;
 	}
 
-
-	public InetAddress[] getAddress() {
+	public boolean wasPrevConnected(){
+		return this.prevConnected;
+	}
+	private void setPrevConnected(boolean connected){
+		this.prevConnected = connected;
+	}
+	
+	public InetAddress[] getAddresses() {
 		return addresses;
 	}
 
 
 	public void setAddress(String networkAddress) throws UnknownHostException {
+		this.setAddressString(networkAddress);
 		this.addresses = InetAddress.getAllByName(networkAddress);
 	}
 
@@ -54,6 +65,14 @@ public class NetworkConnection {
 
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
+	}
+
+	public String getAddressString() {
+		return addressString;
+	}
+
+	private void setAddressString(String addressString) {
+		this.addressString = addressString;
 	}
 
 

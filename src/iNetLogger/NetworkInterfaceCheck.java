@@ -12,6 +12,7 @@ import java.util.Enumeration;
 public class NetworkInterfaceCheck {
 
 	private Enumeration<NetworkInterface> eni;
+	private boolean prevConnected;
 
 	public NetworkInterfaceCheck(){
 		try {
@@ -20,6 +21,7 @@ public class NetworkInterfaceCheck {
 			e.printStackTrace();
 			System.exit(2);
 		}
+		this.isNetworkConnected();
 	}
 
 	/*
@@ -27,7 +29,10 @@ public class NetworkInterfaceCheck {
 	 */
 	public boolean isNetworkConnected(){
 		//TODO: Write
-		return true;
+		boolean connected;
+		connected = false;
+		this.setPrevConnected(connected);
+		return connected;
 	}
 
 	public Enumeration<NetworkInterface> getEni() {
@@ -36,6 +41,14 @@ public class NetworkInterfaceCheck {
 
 	public void setEni(Enumeration<NetworkInterface> eni) {
 		this.eni = eni;
+	}
+
+	public boolean isPrevConnected() {
+		return prevConnected;
+	}
+
+	private void setPrevConnected(boolean prevConnected) {
+		this.prevConnected = prevConnected;
 	}
 
 }

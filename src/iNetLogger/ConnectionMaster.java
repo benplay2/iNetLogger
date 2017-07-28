@@ -14,7 +14,7 @@ public class ConnectionMaster {
 	private NetworkInterfaceCheck interfaceCheck;
 	private LinkedList<NetworkConnection> connectionList = new LinkedList<NetworkConnection>(); //holds all connections to check
 	private LogMaster logger;
-	
+
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
@@ -25,14 +25,14 @@ public class ConnectionMaster {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/*
 	 * Main Method.
 	 */
 	public static void main(String[] args){
 
 		System.out.println("Starting iNetLogger...");
-/*
+		/*
 		// Command line arguments.
 		Options options = new Options();
 
@@ -61,26 +61,30 @@ public class ConnectionMaster {
         String inputFilePath = cmd.getOptionValue("input");
         String outputFilePath = cmd.getOptionValue("output");
 
-		*/
-		
-		
-		
-		
-		
-		
+		 */
+
+
+
+
+
+
 		ConnectionMaster master = new ConnectionMaster();
 
 		long nextCheckTime = System.currentTimeMillis();
 		boolean run = true;
 		long pauseTime;
 		long startTime;
-		boolean connected;
-		
-		//master.getLogger().logStartLogging();
-		
+		boolean iNetConnected;
+		boolean previousInetConnected = true;
+		boolean previousIfaceConnected;
+		boolean tmpLastConnected;
+		boolean verbose = false;
+
+		master.getLogger().logStartLogging();
+
 		startTime = System.currentTimeMillis();
 		while (run){
-			
+
 			pauseTime = nextCheckTime - startTime;
 			if (pauseTime>0){
 				try {
@@ -92,29 +96,49 @@ public class ConnectionMaster {
 				}
 			}
 			startTime = System.currentTimeMillis();
+			previousIfaceConnected = master.getInterfaceCheck().isPrevConnected();
 			
 			if (master.getInterfaceCheck().isNetworkConnected()){
-				connected = false;
+				if (!previousIfaceConnected){
+					master.getLogger().logInterfaceConnected();
+				}
+				iNetConnected = false;
 				for(NetworkConnection curConnection: master.getConnectionList()){
+					tmpLastConnected = curConnection.wasPrevConnected();
 					if (curConnection.isConnected()){
-						connected = true;
+						iNetConnected = true;
+
+						if (!tmpLastConnected){
+							if (verbose){
+								master.getLogger().logConnectionFailed(curConnection.getAddressString());
+							}
+						}
+					}
+					else if(tmpLastConnected){
+						if (verbose){
+							master.getLogger().logConnectionConnected(curConnection.getAddressString());
+						}
 					}
 				}
-				if (!connected){
-					//master.getLogger().logNoInternetConnection();
-				}
-				else{
-					System.out.println("Connected!");
+				if (iNetConnected != previousInetConnected){
+					if (iNetConnected){
+						master.getLogger().logHaveInternetConnection();
+						System.out.println("Connected!");
+					}
+					else{
+						System.out.println("Not Connected!");
+						master.getLogger().logNoInternetConnection();
+					}
 				}
 			}
-			else{
-				//master.getLogger().logInterfaceNotConnected();
+			else if(previousIfaceConnected){
+				master.getLogger().logInterfaceNotConnected();
 			}
-			
+
 			nextCheckTime = startTime + (getSampleRate() * 1000);
 			//run=false;
 		}
-		//master.getLogger().logStopLogging();
+		master.getLogger().logStopLogging();
 
 	}
 
