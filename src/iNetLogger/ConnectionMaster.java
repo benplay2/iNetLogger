@@ -18,12 +18,8 @@ public class ConnectionMaster {
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
-		try {
-			this.getConnectionList().add(new NetworkConnection("www.google.com"));
-		} catch (UnknownHostException e) {
-			System.exit(3);
-			e.printStackTrace();
-		}
+		this.getConnectionList().add(new NetworkConnection("www.google.com"));
+
 	}
 
 	/*
@@ -78,7 +74,7 @@ public class ConnectionMaster {
 		boolean previousInetConnected = true;
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
-		boolean verbose = false;
+		boolean verbose = true;
 
 		master.getLogger().logStartLogging();
 
@@ -101,6 +97,7 @@ public class ConnectionMaster {
 			if (master.getInterfaceCheck().isNetworkConnected()){
 				if (!previousIfaceConnected){
 					master.getLogger().logInterfaceConnected();
+					System.out.println("Interface Connected!");
 				}
 				iNetConnected = false;
 				for(NetworkConnection curConnection: master.getConnectionList()){
@@ -111,28 +108,32 @@ public class ConnectionMaster {
 						if (!tmpLastConnected){
 							if (verbose){
 								master.getLogger().logConnectionFailed(curConnection.getAddressString());
+								System.out.println("This Connection Is Connected!");
 							}
 						}
 					}
 					else if(tmpLastConnected){
 						if (verbose){
 							master.getLogger().logConnectionConnected(curConnection.getAddressString());
+							System.out.println("This Connection Not Connected!");
 						}
 					}
 				}
 				if (iNetConnected != previousInetConnected){
 					if (iNetConnected){
 						master.getLogger().logHaveInternetConnection();
-						System.out.println("Connected!");
+						System.out.println("Internet is Connected!");
 					}
 					else{
-						System.out.println("Not Connected!");
+						System.out.println("Internet Not Connected!");
 						master.getLogger().logNoInternetConnection();
 					}
 				}
+				previousInetConnected = iNetConnected;
 			}
 			else if(previousIfaceConnected){
 				master.getLogger().logInterfaceNotConnected();
+				System.out.println("Interface Not Connected!");
 			}
 
 			nextCheckTime = startTime + (getSampleRate() * 1000);

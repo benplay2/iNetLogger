@@ -14,9 +14,10 @@ public class NetworkConnection {
 	private int timeout = 5000; //timeout in ms
 	private boolean prevConnected;
 	private String addressString;
+	private boolean hostFound;
 
-	public NetworkConnection(String networkAddress) throws UnknownHostException{
-		setAddress(networkAddress);
+	public NetworkConnection(String networkAddress) {
+		this.setAddressString(networkAddress);
 		this.isConnected();
 	}
 
@@ -24,6 +25,12 @@ public class NetworkConnection {
 	 * Return if this NetworkConnection can be reached.
 	 */
 	public boolean isConnected(){
+		if (!this.isHostFound()){
+			if (!this.setAddresses()){
+				return false;
+			}
+		}
+		
 		boolean connected = false;
 
 		for (InetAddress curAddress : getAddresses()){
@@ -52,9 +59,16 @@ public class NetworkConnection {
 	}
 
 
-	public void setAddress(String networkAddress) throws UnknownHostException {
-		this.setAddressString(networkAddress);
-		this.addresses = InetAddress.getAllByName(networkAddress);
+	public boolean setAddresses() {
+		try {
+			this.addresses = InetAddress.getAllByName(this.getAddressString());
+		} catch (UnknownHostException e) {
+			//e.printStackTrace();
+			//System.out.println("Unknown host");
+			return false;
+		}
+		this.setHostFound(true);
+		return true;
 	}
 
 
@@ -73,6 +87,14 @@ public class NetworkConnection {
 
 	private void setAddressString(String addressString) {
 		this.addressString = addressString;
+	}
+
+	private boolean isHostFound() {
+		return hostFound;
+	}
+
+	private void setHostFound(boolean hostFound) {
+		this.hostFound = hostFound;
 	}
 
 

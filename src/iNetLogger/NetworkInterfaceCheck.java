@@ -19,6 +19,7 @@ public class NetworkInterfaceCheck {
 			setEni(NetworkInterface.getNetworkInterfaces());
 		} catch (SocketException e) {
 			e.printStackTrace();
+			System.out.println("Unable to get any network interfaces");
 			System.exit(2);
 		}
 		this.isNetworkConnected();
@@ -30,7 +31,7 @@ public class NetworkInterfaceCheck {
 	public boolean isNetworkConnected(){
 		//TODO: Write
 		boolean connected;
-		connected = false;
+		connected = true;
 		this.setPrevConnected(connected);
 		return connected;
 	}
