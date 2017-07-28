@@ -14,12 +14,13 @@ public class ConnectionMaster {
 	private NetworkInterfaceCheck interfaceCheck;
 	private LinkedList<NetworkConnection> connectionList = new LinkedList<NetworkConnection>(); //holds all connections to check
 	private LogMaster logger;
+	private SysNotificationManager notifMngr;
 
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
 		this.getConnectionList().add(new NetworkConnection("www.google.com"));
-
+		this.setNotifMngr(new SysNotificationManager());
 	}
 
 	/*
@@ -122,11 +123,13 @@ public class ConnectionMaster {
 				if (iNetConnected != previousInetConnected){
 					if (iNetConnected){
 						master.getLogger().logHaveInternetConnection();
+						master.getNotifMngr().displayInternetConnected();
 						System.out.println("Internet is Connected!");
 					}
 					else{
-						System.out.println("Internet Not Connected!");
 						master.getLogger().logNoInternetConnection();
+						master.getNotifMngr().displayInternetNotConnected();
+						System.out.println("Internet Not Connected!");
 					}
 				}
 				previousInetConnected = iNetConnected;
@@ -173,6 +176,14 @@ public class ConnectionMaster {
 
 	public void setLogger(LogMaster logger) {
 		this.logger = logger;
+	}
+
+	public SysNotificationManager getNotifMngr() {
+		return notifMngr;
+	}
+
+	private void setNotifMngr(SysNotificationManager notifMngr) {
+		this.notifMngr = notifMngr;
 	}
 
 }
