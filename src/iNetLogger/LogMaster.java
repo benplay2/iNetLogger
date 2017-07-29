@@ -2,6 +2,7 @@ package iNetLogger;
 
 public class LogMaster {
 
+	private String savePath;
 
 	public void logStartLogging(){
 
@@ -33,5 +34,13 @@ public class LogMaster {
 	public void logInterfaceNotConnected() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public String getSavePath() {
+		return savePath;
+	}
+
+	public void setSavePath(String savePath) {
+		this.savePath = savePath;
 	}
 }

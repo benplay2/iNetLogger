@@ -12,7 +12,7 @@ import org.apache.commons.cli.*;
 public class ConnectionMaster {
 
 
-	private static int sampleRate = 5; // Sample rate in seconds
+	private int sampleRate = 5; // Sample rate in seconds
 	private NetworkInterfaceCheck interfaceCheck;
 	private LinkedList<NetworkConnection> connectionList = new LinkedList<NetworkConnection>(); //holds all connections to check
 	private LogMaster logger;
@@ -34,42 +34,106 @@ public class ConnectionMaster {
 	 */
 	public static void main(String[] args){
 
+		args = new String[] {"-l192.168.1.1","-iwww.google.com,www.yahoo.com"};
+		
 		System.out.println("Starting iNetLogger...");
-		/*
+		ConnectionMaster master = new ConnectionMaster();
+		boolean verbose = false;
+		
 		// Command line arguments.
 		Options options = new Options();
 
-        Option input = new Option("i", "input", true, "input file path");
-        //input.setRequired(true);
-        options.addOption(input);
+		Option help = new Option( "help", "print this message" );
+		options.addOption(help);
+		
+		Option verboseInput = new Option("v", "verbose", false, "Be verbose about connection changes");
+		//output.setRequired(true);
+		options.addOption(verboseInput);
+		
+		Option localAddressInput = new Option("l", "localAddress", true, "Local network address (Recommend default gateway)");
+		//input.setRequired(true);
+		options.addOption(localAddressInput);
 
-        Option output = new Option("o", "output", true, "output file");
-        //output.setRequired(true);
-        options.addOption(output);
+		Option iNetAddressInput = new Option("i", "iNetAddress", true, "Internet address (separate multiple by comma)");
+		//input.setRequired(true);
+		options.addOption(iNetAddressInput);
 
-        CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
-        CommandLine cmd;
+		Option checkRateInput = new Option("r", "checkRate", true, "Connection check rate (seconds, integer)");
+		//output.setRequired(true);
+		options.addOption(checkRateInput);
+		
+		Option savePathInput = new Option("s", "savePath", true, "Path to save log files (default is current working directory)");
+		//output.setRequired(true);
+		options.addOption(savePathInput);
+		
+		
 
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            formatter.printHelp("utility-name", options);
+		CommandLineParser parser = new DefaultParser();
+		HelpFormatter formatter = new HelpFormatter();
+		CommandLine cmd;
 
-            System.exit(1);
-            return;
-        }
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			System.out.println(e.getMessage());
+			formatter.printHelp("iNetLogger", options);
 
-        String inputFilePath = cmd.getOptionValue("input");
-        String outputFilePath = cmd.getOptionValue("output");
+			System.exit(1);
+			return;
+		}
 
-		 */
-
-
-		ConnectionMaster master = new ConnectionMaster("192.168.1.1");
-
-		master.getConnectionList().add(new NetworkConnection("www.google.com"));
+		if (cmd.hasOption("help")){ 
+			formatter.printHelp("iNetLogger", options); 
+			System.exit(1); 
+			return;
+		}
+		if (cmd.hasOption("verbose")){
+			verbose = true;
+		}
+		if (cmd.hasOption("localAddress")){
+			String localAddress = cmd.getOptionValue("localAddress");
+			master.getInterfaceCheck().setLocalAddressString(localAddress);
+			if (verbose){
+				System.out.println("Local address set to: " + localAddress);
+			}
+		}
+		if (cmd.hasOption("iNetAddress")){
+			String iNetAddress = cmd.getOptionValue("iNetAddress");
+			String[] iNetAddresses = iNetAddress.split("\\s*,\\s*");
+			for (String curAddressIn:iNetAddresses){
+				master.getConnectionList().add(new NetworkConnection(curAddressIn));
+			}
+			if (verbose){
+				System.out.println("Internet addresses set to: " + Arrays.toString(iNetAddresses));
+			}
+		}
+		else{
+			String defaultInetAddress = "www.google.com";
+			master.getConnectionList().add(new NetworkConnection(defaultInetAddress));
+			if (verbose){
+				System.out.println("Internet addresses set to: " + defaultInetAddress);
+				
+			}
+		}
+		if (cmd.hasOption("checkRate")){
+			String checkRate = cmd.getOptionValue("checkRate");
+			master.setSampleRate(Integer.parseInt(checkRate.trim()));
+			
+		}
+		if (verbose){
+			System.out.println("Checking connectivity every " + master.getSampleRate() + " seconds");
+		}
+		String savePath;
+		if (cmd.hasOption("savePath")){
+			savePath = cmd.getOptionValue("savePath");
+			}
+		else{
+			savePath = System.getProperty("user.dir");
+		}
+		master.getLogger().setSavePath(savePath);
+		if (verbose){
+			System.out.println("Saving log files to: " + master.getLogger().getSavePath());
+		}
 		
 		long nextCheckTime = System.currentTimeMillis();
 		boolean run = true;
@@ -79,12 +143,12 @@ public class ConnectionMaster {
 		boolean previousInetConnected = true;
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
-		boolean verbose = true;
+		
 		boolean[] connectionChangedArray = new boolean[master.getConnectionList().size()];
 		NetworkConnection curConnection;
 		Iterator<NetworkConnection> networkConnIter;
 		boolean firstRun = true;
-		
+
 		master.getLogger().logStartLogging();
 
 		startTime = System.currentTimeMillis();
@@ -102,12 +166,10 @@ public class ConnectionMaster {
 			}
 			startTime = System.currentTimeMillis();
 			previousIfaceConnected = master.getInterfaceCheck().isPrevConnected();
-			
+
 			if (master.getInterfaceCheck().isNetworkConnected()){
 				if (!previousIfaceConnected){
-					master.getLogger().logInterfaceConnected();
-					master.getNotifMngr().displayInterfaceConnected();
-					System.out.println("Interface Reconnected!");
+					master.notifyInterfaceStatus(true);
 				}
 				if (firstRun){
 					firstRun = false;
@@ -121,21 +183,17 @@ public class ConnectionMaster {
 					tmpLastConnected = curConnection.wasPrevConnected();
 					if (curConnection.isConnected()){
 						iNetConnected = true;
-						
+
 						if (!tmpLastConnected){connectionChangedArray[i] = true;}
 					}
 					else if(tmpLastConnected){connectionChangedArray[i] = true;}
 				}
 				if (iNetConnected != previousInetConnected){ //Internet connection status change
 					if (iNetConnected){
-						master.getLogger().logHaveInternetConnection();
-						master.getNotifMngr().displayInternetConnected();
-						System.out.println("Internet is Connected!");
+						master.notifyInternetStatus(true);
 					}
 					else{
-						master.getLogger().logNoInternetConnection();
-						master.getNotifMngr().displayInternetNotConnected();
-						System.out.println("Internet Not Connected!");
+						master.notifyInternetStatus(false);
 					}
 				}
 				else{//Internet connection status did not change
@@ -146,50 +204,82 @@ public class ConnectionMaster {
 								if (master.getConnectionList().get(i).wasPrevConnected()){
 									//We have reconnected to this connection!
 									if (verbose){
-										master.getLogger().logConnectionFailed(master.getConnectionList().get(i).getAddressString());
-										master.getNotifMngr().displayConnectionConnected(master.getConnectionList().get(i).getAddressString());
-										System.out.println("The Connection'"+ master.getConnectionList().get(i).getAddressString() +"' Is Reconnected!");
-
+										master.notifyIndividualConnectionStatus(true, master.getConnectionList().get(i).getAddressString());
 									}
 								}
 								else {
 									//We have lost connection to this connection!
 									if (verbose){
-										master.getLogger().logConnectionConnected(master.getConnectionList().get(i).getAddressString());
-										master.getNotifMngr().displayConnectionNotConnected(master.getConnectionList().get(i).getAddressString());
-										System.out.println("The Connection'"+ master.getConnectionList().get(i).getAddressString() +"' Is Disconnected!");
+										master.notifyIndividualConnectionStatus(false, master.getConnectionList().get(i).getAddressString());
 									}
 								}
 							}
 						}
-						
+
 					}
 				}
 				previousInetConnected = iNetConnected;
 			}
 			else if(previousIfaceConnected){
-				master.getLogger().logInterfaceNotConnected();
-				master.getNotifMngr().displayInterfaceNotConnected();
-				System.out.println("Interface Disconnected!");
+				master.notifyInterfaceStatus(false);
 			}
 
-			nextCheckTime = startTime + (getSampleRate() * 1000);
+			nextCheckTime = startTime + (master.getSampleRate() * 1000);
 		}
 		master.getLogger().logStopLogging();
 
 	}
 
+	public void notifyInternetStatus(boolean internetConnected){
+		if (internetConnected){
+			this.getLogger().logHaveInternetConnection();
+			this.getNotifMngr().displayInternetConnected();
+			System.out.println("Internet is Connected!");
+		}
+		else{
+			this.getLogger().logNoInternetConnection();
+			this.getNotifMngr().displayInternetNotConnected();
+			System.out.println("Internet Not Connected!");
+		}
 
+	}
+	public void notifyInterfaceStatus(boolean localNetworkConnected){
+		if (localNetworkConnected){
+			this.getLogger().logInterfaceConnected();
+			this.getNotifMngr().displayInterfaceConnected();
+			System.out.println("Reconnected to local network!");
+		}
+		else{
+			this.getLogger().logInterfaceNotConnected();
+			this.getNotifMngr().displayInterfaceNotConnected();
+			System.out.println("Disconnected from local network!");
+		}
+	}
+
+	public void notifyIndividualConnectionStatus(boolean connectionConnected,String connectionAddress){
+		if (connectionConnected){
+			this.getLogger().logConnectionConnected(connectionAddress);
+			this.getNotifMngr().displayConnectionConnected(connectionAddress);
+			System.out.println("The Connection'"+ connectionAddress +"' Is Reconnected!");
+
+		}
+		else{
+			this.getLogger().logConnectionFailed(connectionAddress);
+			this.getNotifMngr().displayConnectionNotConnected(connectionAddress);
+			System.out.println("The Connection'"+ connectionAddress +"' Is Disconnected!");
+
+		}
+	}
 	public static int getTimeSeconds(){
 		return (int)(System.currentTimeMillis() / 1000);
 	}
 
-	public static int getSampleRate() {
-		return sampleRate;
+	public int getSampleRate() {
+		return this.sampleRate;
 	}
 
-	public static void setSampleRate(int sampleRate) {
-		ConnectionMaster.sampleRate = sampleRate;
+	public void setSampleRate(int sampleRate) {
+		this.sampleRate = sampleRate;
 	}
 
 	public LinkedList<NetworkConnection> getConnectionList() {

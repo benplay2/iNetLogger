@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 public class NetworkConnection {
 
 	private InetAddress[] addresses;
-	private int timeout = 5000; //timeout in ms
+	private int timeout = 2000; //timeout in ms
 	private boolean prevConnected;
 	private String addressString;
 	private boolean hostFound;

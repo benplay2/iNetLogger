@@ -38,16 +38,16 @@ public class SysNotificationManager {
     }
     
     public void displayInterfaceConnected(){
-    	this.displayTray("Interface Connected!", "Internet is now connected.", "iNetLogger");
+    	this.displayTray("Interface Connected!", "Now connected to local network", "iNetLogger");
     }
     public void displayInterfaceNotConnected(){
-    	this.displayTray("Interface Not Connected!", "Internet is no longer connected.", "iNetLogger");
+    	this.displayTray("Interface Not Connected!", "No longer connected to local network", "iNetLogger");
     }
     public void displayInternetConnected(){
-    	this.displayTray("Internet Connected!", "Internet is now connected.", "iNetLogger");
+    	this.displayTray("Internet Connected!", "Internet is now connected", "iNetLogger");
     }
     public void displayInternetNotConnected(){
-    	this.displayTray("Internet Not Connected!", "Internet is no longer connected.", "iNetLogger");
+    	this.displayTray("Internet Not Connected!", "Internet is no longer connected", "iNetLogger");
     }
     public void displayConnectionConnected(String connectionAddress){
     	this.displayTray("Connection Resumed!", "Computer is connected to \"" + connectionAddress + "\"", "iNetLogger");

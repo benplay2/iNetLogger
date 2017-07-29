@@ -25,7 +25,7 @@ public class NetworkInterfaceCheck {
 	}
 	public NetworkInterfaceCheck(String localAddress){
 		// If provide localAddress, will determine if interface is working by connecting to localAddress
-		this.setHasLocalAddress(true);
+
 		this.setLocalAddressString(localAddress);
 		this.isNetworkConnected();
 
@@ -40,9 +40,9 @@ public class NetworkInterfaceCheck {
 		if (this.isHasLocalAddress()){
 			//See if we can connect to the local address
 			try {
-				connected = InetAddress.getByName(this.getLocalAddressString()).isReachable(100);
+				connected = InetAddress.getByName(this.getLocalAddressString()).isReachable(1000);
 				if (!connected){
-					connected = InetAddress.getByName("www.google.com").isReachable(100);
+					connected = InetAddress.getByName("www.google.com").isReachable(500);
 					if (connected){
 						//We have a problem... local is not reachable but internet is
 						System.out.println("Problem detected with local network address provided! (\"" + this.getLocalAddressString() + "\")");
@@ -53,7 +53,7 @@ public class NetworkInterfaceCheck {
 				//e.printStackTrace();
 				connected = false;
 			}
-			
+
 		}
 		else{// We were not provided a local address
 			try {
@@ -97,7 +97,11 @@ public class NetworkInterfaceCheck {
 		return localAddressString;
 	}
 
-	private void setLocalAddressString(String localAddressString) {
+	public void setLocalAddressString(String localAddressString) {
+		if(localAddressString != null && !localAddressString.isEmpty()) {
+			return;
+		}
+		this.setHasLocalAddress(true);
 		this.localAddressString = localAddressString;
 	}
 
