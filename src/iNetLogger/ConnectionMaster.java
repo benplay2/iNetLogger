@@ -1,6 +1,8 @@
 package iNetLogger;
 
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import org.apache.commons.cli.*;
 /*
@@ -19,10 +21,14 @@ public class ConnectionMaster {
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
-		this.getConnectionList().add(new NetworkConnection("www.google.com"));
 		this.setNotifMngr(new SysNotificationManager());
 	}
 
+	public ConnectionMaster(String localInterfaceAddress){
+		setInterfaceCheck(new NetworkInterfaceCheck(localInterfaceAddress));
+		setLogger(new LogMaster());
+		this.setNotifMngr(new SysNotificationManager());
+	}
 	/*
 	 * Main Method.
 	 */
@@ -61,12 +67,10 @@ public class ConnectionMaster {
 		 */
 
 
+		ConnectionMaster master = new ConnectionMaster("192.168.1.1");
 
-
-
-
-		ConnectionMaster master = new ConnectionMaster();
-
+		master.getConnectionList().add(new NetworkConnection("www.google.com"));
+		
 		long nextCheckTime = System.currentTimeMillis();
 		boolean run = true;
 		long pauseTime;
@@ -76,7 +80,11 @@ public class ConnectionMaster {
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
 		boolean verbose = true;
-
+		boolean[] connectionChangedArray = new boolean[master.getConnectionList().size()];
+		NetworkConnection curConnection;
+		Iterator<NetworkConnection> networkConnIter;
+		boolean firstRun = true;
+		
 		master.getLogger().logStartLogging();
 
 		startTime = System.currentTimeMillis();
@@ -98,29 +106,27 @@ public class ConnectionMaster {
 			if (master.getInterfaceCheck().isNetworkConnected()){
 				if (!previousIfaceConnected){
 					master.getLogger().logInterfaceConnected();
-					System.out.println("Interface Connected!");
+					master.getNotifMngr().displayInterfaceConnected();
+					System.out.println("Interface Reconnected!");
+				}
+				if (firstRun){
+					firstRun = false;
+					previousInetConnected = false; //Want to log even if we have connected on start.
 				}
 				iNetConnected = false;
-				for(NetworkConnection curConnection: master.getConnectionList()){
+				Arrays.fill(connectionChangedArray, false);
+				networkConnIter = master.getConnectionList().iterator();
+				for (int i=0; i<master.getConnectionList().size(); i++){
+					curConnection = networkConnIter.next();
 					tmpLastConnected = curConnection.wasPrevConnected();
 					if (curConnection.isConnected()){
 						iNetConnected = true;
-
-						if (!tmpLastConnected){
-							if (verbose){
-								master.getLogger().logConnectionFailed(curConnection.getAddressString());
-								System.out.println("This Connection Is Connected!");
-							}
-						}
+						
+						if (!tmpLastConnected){connectionChangedArray[i] = true;}
 					}
-					else if(tmpLastConnected){
-						if (verbose){
-							master.getLogger().logConnectionConnected(curConnection.getAddressString());
-							System.out.println("This Connection Not Connected!");
-						}
-					}
+					else if(tmpLastConnected){connectionChangedArray[i] = true;}
 				}
-				if (iNetConnected != previousInetConnected){
+				if (iNetConnected != previousInetConnected){ //Internet connection status change
 					if (iNetConnected){
 						master.getLogger().logHaveInternetConnection();
 						master.getNotifMngr().displayInternetConnected();
@@ -132,15 +138,42 @@ public class ConnectionMaster {
 						System.out.println("Internet Not Connected!");
 					}
 				}
+				else{//Internet connection status did not change
+					if (Arrays.asList(connectionChangedArray).contains(true)){
+						//We had an individual connection status change
+						for (int i=0; i < master.getConnectionList().size(); i++){
+							if (connectionChangedArray[i]){
+								if (master.getConnectionList().get(i).wasPrevConnected()){
+									//We have reconnected to this connection!
+									if (verbose){
+										master.getLogger().logConnectionFailed(master.getConnectionList().get(i).getAddressString());
+										master.getNotifMngr().displayConnectionConnected(master.getConnectionList().get(i).getAddressString());
+										System.out.println("The Connection'"+ master.getConnectionList().get(i).getAddressString() +"' Is Reconnected!");
+
+									}
+								}
+								else {
+									//We have lost connection to this connection!
+									if (verbose){
+										master.getLogger().logConnectionConnected(master.getConnectionList().get(i).getAddressString());
+										master.getNotifMngr().displayConnectionNotConnected(master.getConnectionList().get(i).getAddressString());
+										System.out.println("The Connection'"+ master.getConnectionList().get(i).getAddressString() +"' Is Disconnected!");
+									}
+								}
+							}
+						}
+						
+					}
+				}
 				previousInetConnected = iNetConnected;
 			}
 			else if(previousIfaceConnected){
 				master.getLogger().logInterfaceNotConnected();
-				System.out.println("Interface Not Connected!");
+				master.getNotifMngr().displayInterfaceNotConnected();
+				System.out.println("Interface Disconnected!");
 			}
 
 			nextCheckTime = startTime + (getSampleRate() * 1000);
-			//run=false;
 		}
 		master.getLogger().logStopLogging();
 

@@ -40,7 +40,7 @@ public class NetworkConnection {
 					break;
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		}
 		this.setPrevConnected(connected);

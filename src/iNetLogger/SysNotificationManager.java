@@ -15,12 +15,6 @@ public class SysNotificationManager {
 	}
 	
 	public static void main(String[] args) throws AWTException, java.net.MalformedURLException {
-//        if (SystemTray.isSupported()) {
-//        	SysNotificationManager td = new SysNotificationManager();
-//            td.displayTrayDemo();
-//        } else {
-//            System.err.println("System tray not supported!");
-//        }
 		SysNotificationManager td = new SysNotificationManager();
 		td.displayInternetConnected();
         
@@ -43,12 +37,25 @@ public class SysNotificationManager {
         trayIcon.displayMessage("Hello, World", "notification demo", MessageType.INFO);
     }
     
+    public void displayInterfaceConnected(){
+    	this.displayTray("Interface Connected!", "Internet is now connected.", "iNetLogger");
+    }
+    public void displayInterfaceNotConnected(){
+    	this.displayTray("Interface Not Connected!", "Internet is no longer connected.", "iNetLogger");
+    }
     public void displayInternetConnected(){
     	this.displayTray("Internet Connected!", "Internet is now connected.", "iNetLogger");
     }
     public void displayInternetNotConnected(){
     	this.displayTray("Internet Not Connected!", "Internet is no longer connected.", "iNetLogger");
     }
+    public void displayConnectionConnected(String connectionAddress){
+    	this.displayTray("Connection Resumed!", "Computer is connected to \"" + connectionAddress + "\"", "iNetLogger");
+    }
+    public void displayConnectionNotConnected(String connectionAddress){
+    	this.displayTray("Connection Lost!", "Computer no longer connected to \"" + connectionAddress + "\"", "iNetLogger");
+    }
+    
     
     private void displayTray(String caption, String text, String tooltip){
     	if (!this.isTraySuppported()){
