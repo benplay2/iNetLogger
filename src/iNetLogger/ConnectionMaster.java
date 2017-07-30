@@ -17,6 +17,8 @@ public class ConnectionMaster {
 	private LinkedList<NetworkConnection> connectionList = new LinkedList<NetworkConnection>(); //holds all connections to check
 	private LogMaster logger;
 	private SysNotificationManager notifMngr;
+	private boolean keepRunning = true;
+	private boolean verbose = false;
 
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
@@ -35,21 +37,20 @@ public class ConnectionMaster {
 	public static void main(String[] args){
 
 		args = new String[] {"-l192.168.1.1","-iwww.google.com,www.yahoo.com"};
-		
+
 		System.out.println("Starting iNetLogger...");
 		ConnectionMaster master = new ConnectionMaster();
-		boolean verbose = false;
-		
+
 		// Command line arguments.
 		Options options = new Options();
 
 		Option help = new Option( "help", "print this message" );
 		options.addOption(help);
-		
+
 		Option verboseInput = new Option("v", "verbose", false, "Be verbose about connection changes");
 		//output.setRequired(true);
 		options.addOption(verboseInput);
-		
+
 		Option localAddressInput = new Option("l", "localAddress", true, "Local network address (Recommend default gateway)");
 		//input.setRequired(true);
 		options.addOption(localAddressInput);
@@ -61,12 +62,12 @@ public class ConnectionMaster {
 		Option checkRateInput = new Option("r", "checkRate", true, "Connection check rate (seconds, integer)");
 		//output.setRequired(true);
 		options.addOption(checkRateInput);
-		
+
 		Option savePathInput = new Option("s", "savePath", true, "Path to save log files (default is current working directory)");
 		//output.setRequired(true);
 		options.addOption(savePathInput);
-		
-		
+
+
 
 		CommandLineParser parser = new DefaultParser();
 		HelpFormatter formatter = new HelpFormatter();
@@ -88,12 +89,12 @@ public class ConnectionMaster {
 			return;
 		}
 		if (cmd.hasOption("verbose")){
-			verbose = true;
+			master.setVerbose(true);
 		}
 		if (cmd.hasOption("localAddress")){
 			String localAddress = cmd.getOptionValue("localAddress");
 			master.getInterfaceCheck().setLocalAddressString(localAddress);
-			if (verbose){
+			if (master.isVerbose()){
 				System.out.println("Local address set to: " + localAddress);
 			}
 		}
@@ -103,47 +104,46 @@ public class ConnectionMaster {
 			for (String curAddressIn:iNetAddresses){
 				master.getConnectionList().add(new NetworkConnection(curAddressIn));
 			}
-			if (verbose){
+			if (master.isVerbose()){
 				System.out.println("Internet addresses set to: " + Arrays.toString(iNetAddresses));
 			}
 		}
 		else{
 			String defaultInetAddress = "www.google.com";
 			master.getConnectionList().add(new NetworkConnection(defaultInetAddress));
-			if (verbose){
+			if (master.isVerbose()){
 				System.out.println("Internet addresses set to: " + defaultInetAddress);
-				
+
 			}
 		}
 		if (cmd.hasOption("checkRate")){
 			String checkRate = cmd.getOptionValue("checkRate");
 			master.setSampleRate(Integer.parseInt(checkRate.trim()));
-			
+
 		}
-		if (verbose){
+		if (master.isVerbose()){
 			System.out.println("Checking connectivity every " + master.getSampleRate() + " seconds");
 		}
 		String savePath;
 		if (cmd.hasOption("savePath")){
 			savePath = cmd.getOptionValue("savePath");
-			}
+		}
 		else{
 			savePath = System.getProperty("user.dir");
 		}
 		master.getLogger().setSavePath(savePath);
-		if (verbose){
+		if (master.isVerbose()){
 			System.out.println("Saving log files to: " + master.getLogger().getSavePath());
 		}
-		
+
 		long nextCheckTime = System.currentTimeMillis();
-		boolean run = true;
 		long pauseTime;
 		long startTime;
 		boolean iNetConnected;
 		boolean previousInetConnected = true;
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
-		
+
 		boolean[] connectionChangedArray = new boolean[master.getConnectionList().size()];
 		NetworkConnection curConnection;
 		Iterator<NetworkConnection> networkConnIter;
@@ -151,8 +151,10 @@ public class ConnectionMaster {
 
 		master.getLogger().logStartLogging();
 
+		Runtime.getRuntime().addShutdownHook(new iNetLoggerShutdownHook(master));
+
 		startTime = System.currentTimeMillis();
-		while (run){
+		while (master.isKeepRunning()){
 
 			pauseTime = nextCheckTime - startTime;
 			if (pauseTime>0){
@@ -160,7 +162,8 @@ public class ConnectionMaster {
 					Thread.sleep(pauseTime);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					run = false;
+					//master.endProgram();
+					//run = false;
 					break;
 				}
 			}
@@ -203,15 +206,11 @@ public class ConnectionMaster {
 							if (connectionChangedArray[i]){
 								if (master.getConnectionList().get(i).wasPrevConnected()){
 									//We have reconnected to this connection!
-									if (verbose){
-										master.notifyIndividualConnectionStatus(true, master.getConnectionList().get(i).getAddressString());
-									}
+									master.notifyIndividualConnectionStatus(true, master.getConnectionList().get(i).getAddressString());
 								}
 								else {
 									//We have lost connection to this connection!
-									if (verbose){
-										master.notifyIndividualConnectionStatus(false, master.getConnectionList().get(i).getAddressString());
-									}
+									master.notifyIndividualConnectionStatus(false, master.getConnectionList().get(i).getAddressString());
 								}
 							}
 						}
@@ -226,7 +225,7 @@ public class ConnectionMaster {
 
 			nextCheckTime = startTime + (master.getSampleRate() * 1000);
 		}
-		master.getLogger().logStopLogging();
+		//master.getLogger().logStopLogging();
 
 	}
 
@@ -257,16 +256,21 @@ public class ConnectionMaster {
 	}
 
 	public void notifyIndividualConnectionStatus(boolean connectionConnected,String connectionAddress){
+
 		if (connectionConnected){
 			this.getLogger().logConnectionConnected(connectionAddress);
-			this.getNotifMngr().displayConnectionConnected(connectionAddress);
-			System.out.println("The Connection'"+ connectionAddress +"' Is Reconnected!");
+			if (this.isVerbose()){
+				this.getNotifMngr().displayConnectionConnected(connectionAddress);
+				System.out.println("The Connection'"+ connectionAddress +"' Is Reconnected!");
+			}
 
 		}
 		else{
 			this.getLogger().logConnectionFailed(connectionAddress);
-			this.getNotifMngr().displayConnectionNotConnected(connectionAddress);
-			System.out.println("The Connection'"+ connectionAddress +"' Is Disconnected!");
+			if (this.isVerbose()){
+				this.getNotifMngr().displayConnectionNotConnected(connectionAddress);
+				System.out.println("The Connection'"+ connectionAddress +"' Is Disconnected!");
+			}
 
 		}
 	}
@@ -307,6 +311,26 @@ public class ConnectionMaster {
 
 	private void setNotifMngr(SysNotificationManager notifMngr) {
 		this.notifMngr = notifMngr;
+	}
+	public void endProgram(){
+		this.setKeepRunning(false);
+		this.getLogger().logStopLogging();
+	}
+
+	private boolean isKeepRunning() {
+		return keepRunning;
+	}
+
+	private void setKeepRunning(boolean keepRunning) {
+		this.keepRunning = keepRunning;
+	}
+
+	private boolean isVerbose() {
+		return verbose;
+	}
+
+	private void setVerbose(boolean verbose) {
+		this.verbose = verbose;
 	}
 
 }
