@@ -22,6 +22,7 @@ public class LogMaster {
 	private String timeLogFilename;
 	
 	private long lastSavedTime;
+	private int maxTimeDiffToSave; //Time after which to save last log time
 	
 	private boolean writeCSV(String filePath, String newLine){
 		//TODO: write
@@ -48,7 +49,7 @@ public class LogMaster {
 	}
 	
 	
-	private void writeLastLogTime(){
+	public void writeLastLogTime(){
 		/*
 		 * This method is intended to be called every once
 		 * in a while to log the last time that was monitored
@@ -57,38 +58,60 @@ public class LogMaster {
 		 * 
 		 * Maybe call every 5 minutes?
 		 */
+		
 	}
 	
+	/*
+	 * This method creates a new CSV entry stating current status and
+	 * that iNetLogger is starting again.
+	 * 
+	 * Note: also needs to check if the last log time was recorded.
+	 * Check if the time difference is > maxTimeDiffToSave. If it is,
+	 * log an entry for that time saying logging stopped.
+	 */
 	public void logStartLogging(){
+		//TODO: Add a new entry to LinkedList
+		writeToInternetLog();
 
 	}
 
 	public void logNoInternetConnection(){
+		//TODO: Add a new entry to LinkedList
+		writeToInternetLog();
 
 	}
 	public void logHaveInternetConnection(){
-
+		//TODO: Add a new entry to LinkedList
+		writeToInternetLog();
 	}
 
 	public void logStopLogging(){
+		//TODO: Add a new entry to LinkedList
+		writeToInternetLog();
 
 	}
 
 	public void logConnectionFailed(String connectionAddress){
+		//TODO: Add a new entry to LinkedList
+		writeToConnectionLog();
 
 	}
 	public void logConnectionConnected(String connectionAddress){
+		//TODO: Add a new entry to LinkedList
+		writeToConnectionLog();
 
 	}
 
 	public void logInterfaceConnected() {
+		//TODO: Add a new entry to LinkedList
 		// TODO Auto-generated method stub
-		
+		writeToInternetLog();
 	}
 
 	public void logInterfaceNotConnected() {
+		//TODO: Add a new entry to LinkedList
 		// TODO Auto-generated method stub
-		
+		writeToInternetLog();
 	}
 
 	public String getSavePath() {
@@ -107,56 +130,13 @@ public class LogMaster {
 	private LinkedList<ConnectionCSVEntry> getConnectionEntries() {
 		return connectionEntries;
 	}
-	private static String getCSVTimestamp(){
+	public static String getCSVTimestamp(){
 		return new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
 	}
 
 
-	private class InternetCSVEntry implements CSVEntry{
-		private String timestamp;
-		private boolean localConnected;
-		private boolean internetConnected;
-		private int programStatus;
-		
-		public InternetCSVEntry(boolean localConnected, boolean internetConnected, int programStatus){
-			this.timestamp = LogMaster.getCSVTimestamp();
-			this.localConnected = localConnected;
-			this.internetConnected = internetConnected;
-			this.programStatus = programStatus;
-		}
 
-		@Override
-		public String getCSVLine() {
-			return this.timestamp + "," + String.valueOf(this.localConnected) + "," + String.valueOf(this.internetConnected) + "," + String.valueOf(this.programStatus);
-		}
-
-		@Override
-		public String getCSVHeader() {
-			return "Timestamp,Connected to Local,Connected to Internet,Program Status (1-starting,0-normal,-1-stopping)";
-		}
-		
-	}
-	private class ConnectionCSVEntry implements CSVEntry{
-		private String timestamp;
-		private String address;
-		private boolean connected;
-		
-		public ConnectionCSVEntry(String connectionAddress, boolean connected){
-			this.timestamp = LogMaster.getCSVTimestamp();
-			this.address = connectionAddress;
-			this.connected = connected;
-		}
-
-		@Override
-		public String getCSVLine() {
-			return this.timestamp + "," + this.address + "," + String.valueOf(this.connected);
-		}
-		@Override
-		public String getCSVHeader() {
-			return "Timestamp,Address,Connected";
-		}
-		
-	}
+	
 }
 
 

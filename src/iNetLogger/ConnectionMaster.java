@@ -155,7 +155,7 @@ public class ConnectionMaster {
 
 		startTime = System.currentTimeMillis();
 		while (master.isKeepRunning()){
-
+			master.getLogger().writeLastLogTime();
 			pauseTime = nextCheckTime - startTime;
 			if (pauseTime>0){
 				try {
