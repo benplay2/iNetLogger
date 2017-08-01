@@ -1,9 +1,9 @@
 package iNetLogger;
 
-public interface CSVEntry {
-	public String getCSVLine();
+public abstract class CSVEntry {
+	public abstract String getCSVLine();
 	
-	public String getCSVHeader();
+	public abstract String getCSVHeader();
 }
 
 

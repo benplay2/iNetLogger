@@ -1,6 +1,9 @@
 package iNetLogger;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.LinkedList;
 
 public class LogMaster {
@@ -24,18 +27,40 @@ public class LogMaster {
 	private long lastSavedTime;
 	private int maxTimeDiffToSave; //Time after which to save last log time
 	
-	private boolean writeCSV(String filePath, String newLine){
-		//TODO: write
-		return false;
-	}
+	private int fileIOExceptionCount = 0;
+	
+	private int maxFileIOExceptionCount = 3; //May want to adjust. After hit this number, give up
 
-	private boolean isFileCreated(String filePath){
-		//TODO: write
-		return false;
+	public String getInternetLogFullPath(){
+		return new File(this.getSavePath(), this.getInternetLogFilename()).toString();
+	}
+	public String getConnectionLogFullPath(){
+		return new File(this.getSavePath(), this.getConnectionLogFilename()).toString();
+	}
+	public String getTimeLogFullPath(){
+		return new File(this.getSavePath(), this.getTimeLogFilename()).toString();
 	}
 	
 	private boolean writeToInternetLog(){
-		//TODO: write
+		//TODO: Still need to work on IOException... and what to do after so many fails and such.
+		
+		Collection<InternetCSVEntry> entries = this.getInternetEntries();
+		if (entries.isEmpty()){
+			return true;
+		}
+		
+		Collection<String> newLines = new LinkedList<String>();
+
+		for (CSVEntry curEntry: entries){
+			newLines.add(curEntry.getCSVLine());
+		}
+		
+		try {
+			FileUtils.appendToFilePlusReturn(this.getInternetLogFullPath(), newLines , this.getInternetEntries().get(0).getCSVHeader());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return false;
 	}
 	
@@ -45,6 +70,7 @@ public class LogMaster {
 	}
 	private boolean writeTimeLog(){
 		//TODO: write
+		//Use FileUtils.replaceFileContents
 		return false;
 	}
 	
@@ -132,6 +158,30 @@ public class LogMaster {
 	}
 	public static String getCSVTimestamp(){
 		return new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
+	}
+
+	public String getInternetLogFilename() {
+		return internetLogFilename;
+	}
+
+	public void setInternetLogFilename(String internetLogFilename) {
+		this.internetLogFilename = internetLogFilename;
+	}
+
+	public String getConnectionLogFilename() {
+		return connectionLogFilename;
+	}
+
+	public void setConnectionLogFilename(String connectionLogFilename) {
+		this.connectionLogFilename = connectionLogFilename;
+	}
+
+	public String getTimeLogFilename() {
+		return timeLogFilename;
+	}
+
+	public void setTimeLogFilename(String timeLogFilename) {
+		this.timeLogFilename = timeLogFilename;
 	}
 
 

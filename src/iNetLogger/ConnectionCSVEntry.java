@@ -1,6 +1,6 @@
 package iNetLogger;
 
-public class ConnectionCSVEntry implements CSVEntry{
+public class ConnectionCSVEntry extends CSVEntry{
 	private String timestamp;
 	private String address;
 	private boolean connected;
