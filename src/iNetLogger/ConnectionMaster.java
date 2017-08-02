@@ -140,7 +140,7 @@ public class ConnectionMaster {
 		long pauseTime;
 		long startTime;
 		boolean iNetConnected;
-		boolean previousInetConnected = true;
+		boolean previousInetConnected = false;
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
 
@@ -148,14 +148,16 @@ public class ConnectionMaster {
 		NetworkConnection curConnection;
 		Iterator<NetworkConnection> networkConnIter;
 		boolean firstRun = true;
+		boolean fileWriteOK = true;
 
-		master.getLogger().logStartLogging();
+		//master.getLogger().logStartLogging();
 
 		Runtime.getRuntime().addShutdownHook(new iNetLoggerShutdownHook(master));
 
 		startTime = System.currentTimeMillis();
+		
 		while (master.isKeepRunning()){
-			master.getLogger().writeLastLogTime();
+			fileWriteOK = master.getLogger().writeQueuedEntriesToFile();
 			pauseTime = nextCheckTime - startTime;
 			if (pauseTime>0){
 				try {
@@ -171,13 +173,6 @@ public class ConnectionMaster {
 			previousIfaceConnected = master.getInterfaceCheck().isPrevConnected();
 
 			if (master.getInterfaceCheck().isNetworkConnected()){
-				if (!previousIfaceConnected){
-					master.notifyInterfaceStatus(true);
-				}
-				if (firstRun){
-					firstRun = false;
-					previousInetConnected = false; //Want to log even if we have connected on start.
-				}
 				iNetConnected = false;
 				Arrays.fill(connectionChangedArray, false);
 				networkConnIter = master.getConnectionList().iterator();
@@ -191,7 +186,7 @@ public class ConnectionMaster {
 					}
 					else if(tmpLastConnected){connectionChangedArray[i] = true;}
 				}
-				if (iNetConnected != previousInetConnected){ //Internet connection status change
+				if (iNetConnected != previousInetConnected && !firstRun){ //Internet connection status change
 					if (iNetConnected){
 						master.notifyInternetStatus(true);
 					}
@@ -199,7 +194,7 @@ public class ConnectionMaster {
 						master.notifyInternetStatus(false);
 					}
 				}
-				else{//Internet connection status did not change
+				else if (!firstRun){//Internet connection status did not change
 					if (Arrays.asList(connectionChangedArray).contains(true)){
 						//We had an individual connection status change
 						for (int i=0; i < master.getConnectionList().size(); i++){
@@ -214,13 +209,28 @@ public class ConnectionMaster {
 								}
 							}
 						}
-
 					}
 				}
+				if (firstRun){
+					master.getLogger().logStartLogging(true, iNetConnected);
+				}
+				if (!previousIfaceConnected && !firstRun){
+					master.notifyInterfaceStatus(true,iNetConnected);
+				}
 				previousInetConnected = iNetConnected;
+				if (firstRun){
+					master.getLogger().logStartLogging(true, iNetConnected);
+					firstRun = false;
+				}
 			}
-			else if(previousIfaceConnected){
-				master.notifyInterfaceStatus(false);
+			else if(previousIfaceConnected || firstRun){
+				if (firstRun){
+					master.getLogger().logStartLogging(false, false);
+					firstRun = false;
+				}
+				else{
+					master.notifyInterfaceStatus(false,false);
+					}
 			}
 
 			nextCheckTime = startTime + (master.getSampleRate() * 1000);
@@ -242,9 +252,9 @@ public class ConnectionMaster {
 		}
 
 	}
-	public void notifyInterfaceStatus(boolean localNetworkConnected){
+	public void notifyInterfaceStatus(boolean localNetworkConnected, boolean internetConnected){
 		if (localNetworkConnected){
-			this.getLogger().logInterfaceConnected();
+			this.getLogger().logInterfaceConnected(internetConnected);
 			this.getNotifMngr().displayInterfaceConnected();
 			System.out.println("Reconnected to local network!");
 		}
@@ -314,7 +324,7 @@ public class ConnectionMaster {
 	}
 	public void endProgram(){
 		this.setKeepRunning(false);
-		this.getLogger().logStopLogging();
+		this.getLogger().logStopLogging(this.wasLocalLastConnected(),this.wasInternetLastConnected());
 	}
 
 	private boolean isKeepRunning() {

@@ -55,7 +55,9 @@ public class SysNotificationManager {
     public void displayConnectionNotConnected(String connectionAddress){
     	this.displayTray("Connection Lost!", "Computer no longer connected to \"" + connectionAddress + "\"", "iNetLogger");
     }
-    
+    public void displayErrorWriting(String filename){
+    	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to \"" + filename + "\". Close any applications using this file or iNetLogger will quit.", "iNetLogger");
+    }
     
     private void displayTray(String caption, String text, String tooltip){
     	if (!this.isTraySuppported()){

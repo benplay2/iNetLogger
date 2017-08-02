@@ -12,6 +12,12 @@ public class InternetCSVEntry extends CSVEntry{
 		this.internetConnected = internetConnected;
 		this.programStatus = programStatus;
 	}
+	public InternetCSVEntry(String entryTime, boolean localConnected, boolean internetConnected, int programStatus){
+		this.timestamp = entryTime;
+		this.localConnected = localConnected;
+		this.internetConnected = internetConnected;
+		this.programStatus = programStatus;
+	}
 
 	@Override
 	public String getCSVLine() {
