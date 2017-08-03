@@ -83,11 +83,23 @@ public class LogMaster {
 	}
 	
 	private boolean writeToInternetLog(){
-		return this.writeToCSVFromCSVEntryList(this.getInternetLogFullPath(), this.getInternetEntries());
+		if ( this.writeToCSVFromCSVEntryList(this.getInternetLogFullPath(), this.getInternetEntries())){
+			this.getInternetEntries().clear();
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	private boolean writeToConnectionLog(){
-		return this.writeToCSVFromCSVEntryList(this.getConnectionLogFullPath(), this.getConnectionEntries());
+		if (this.writeToCSVFromCSVEntryList(this.getConnectionLogFullPath(), this.getConnectionEntries())){
+			this.getConnectionEntries().clear();
+			return true;
+		}
+		else{
+			return false;
+		}
+			
 	}
 	
 	private boolean writeToCSVFromCSVEntryList(String filePath, AbstractList<? extends CSVEntry> entries){
