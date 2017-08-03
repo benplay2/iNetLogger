@@ -26,7 +26,7 @@ public class InternetCSVEntry extends CSVEntry{
 
 	@Override
 	public String getCSVHeader() {
-		return "Timestamp,Connected to Local,Connected to Internet,Program Status (1-starting,0-normal,-1-stopping)";
+		return "Timestamp,Connected to Local,Connected to Internet,Program Status (1-starting 0-normal -1-stopping)";
 	}
 	
 }

@@ -18,6 +18,19 @@ public class LogMaster {
 	 * 2. CSV file containing entries about individual connection changes
 	 * 3. Text file containing last time that iNetLogger was running.
 	 */
+
+	public LogMaster(){
+		this.setInternetLogFilename("iNetLog.csv");
+		this.setConnectionLogFilename("connectionLog.csv");
+		this.setTimeLogFilename("lastTimeLogged.txt");
+		this.addMissingStopEntry();
+	}
+	public LogMaster(String internetLogFilename, String connectionLogFilename, String timeLogFilename){
+		this.setInternetLogFilename(internetLogFilename);
+		this.setConnectionLogFilename(connectionLogFilename);
+		this.setTimeLogFilename(timeLogFilename);
+		this.addMissingStopEntry();
+	}
 	
 	private LinkedList<InternetCSVEntry> internetEntries = new LinkedList<InternetCSVEntry>();
 	private LinkedList<ConnectionCSVEntry> connectionEntries = new LinkedList<ConnectionCSVEntry>();
@@ -46,6 +59,17 @@ public class LogMaster {
 		boolean timeSuccess = this.writeLastLogTime();
 		
 		return connectionCSVSuccess && internetCSVSuccess && timeSuccess;
+	}
+	
+	public void addMissingStopEntry(){
+		//TODO: Write. Check if we have a last time in time log
+		/*
+		 * If we do have a last time, see if the last time logged in
+		 * internet log is within tolerance or if an entry exists that
+		 * says logging stopped.
+		 * 
+		 * If not, add a new entry that says logging stopped at the last time logged.
+		 */
 	}
 	
 	public String getInternetLogFullPath(){
@@ -257,10 +281,10 @@ public class LogMaster {
 		return connectionEntries;
 	}
 	public static String getCSVTimestamp(){
-		return new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
+		return new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new java.util.Date());
 	}
 	public static String getCSVTimestamp(long timeMS){
-		return new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date(timeMS));
+		return new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new java.util.Date(timeMS));
 	}
 
 	public String getInternetLogFilename() {

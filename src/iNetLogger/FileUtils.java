@@ -102,7 +102,7 @@ public class FileUtils {
 			bw.write(curLine);
 			bw.newLine();
 		}
-
+		bw.close();
 		return;
 	}
 }

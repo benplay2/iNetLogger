@@ -5,15 +5,30 @@ import java.awt.TrayIcon.MessageType;
 
 public class SysNotificationManager {
 
-	
-	private SystemTray tray = SystemTray.getSystemTray();
-	private Image image = Toolkit.getDefaultToolkit().createImage("icon.png");
+	private TrayIcon trayIcon;
 	private boolean traySuppported;
-	
+
 	public SysNotificationManager(){
 		this.setTraySuppported(SystemTray.isSupported());
+		TrayIcon trayIcon = null;
+		if (SystemTray.isSupported()){
+			SystemTray tray = SystemTray.getSystemTray();
+			Image image = Toolkit.getDefaultToolkit().createImage("icon.png"); //TODO: get an icon...
+			trayIcon = new TrayIcon(image,"iNetLogger");
+			trayIcon.setImageAutoSize(true);
+			
+			try {
+				tray.add(trayIcon);
+			} catch (AWTException e) {
+				//e.printStackTrace();
+				this.setTraySuppported(false);
+			}
+		}
+		if (this.isTraySuppported()){
+			this.setTrayIcon(trayIcon);
+		}
 	}
-	
+
 	public static void main(String[] args) throws AWTException, java.net.MalformedURLException {
 		SysNotificationManager td = new SysNotificationManager();
 		td.displayInternetConnected();
@@ -38,66 +53,48 @@ public class SysNotificationManager {
     }
     
     public void displayInterfaceConnected(){
-    	this.displayTray("Interface Connected!", "Now connected to local network", "iNetLogger");
+    	this.displayTray("Interface Connected!", "Now connected to local network");
     }
     public void displayInterfaceNotConnected(){
-    	this.displayTray("Interface Not Connected!", "No longer connected to local network", "iNetLogger");
+    	this.displayTray("Interface Not Connected!", "No longer connected to local network");
     }
     public void displayInternetConnected(){
-    	this.displayTray("Internet Connected!", "Internet is now connected", "iNetLogger");
+    	this.displayTray("Internet Connected!", "Internet is now connected");
     }
     public void displayInternetNotConnected(){
-    	this.displayTray("Internet Not Connected!", "Internet is no longer connected", "iNetLogger");
+    	this.displayTray("Internet Not Connected!", "Internet is no longer connected");
     }
     public void displayConnectionConnected(String connectionAddress){
-    	this.displayTray("Connection Resumed!", "Computer is connected to \"" + connectionAddress + "\"", "iNetLogger");
+    	this.displayTray("Connection Resumed!", "Computer is connected to \"" + connectionAddress + "\"");
     }
     public void displayConnectionNotConnected(String connectionAddress){
-    	this.displayTray("Connection Lost!", "Computer no longer connected to \"" + connectionAddress + "\"", "iNetLogger");
+    	this.displayTray("Connection Lost!", "Computer no longer connected to \"" + connectionAddress + "\"");
     }
     public void displayErrorWriting(String filename){
-    	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to \"" + filename + "\". Close any applications using this file or iNetLogger will quit.", "iNetLogger");
+    	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to \"" + filename + "\". Close any applications using this file or iNetLogger will quit.");
     }
-    
-    private void displayTray(String caption, String text, String tooltip){
+    public void displayErrorWriting(){
+    	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to at least one of the log files. Close any applications using the files or iNetLogger will quit.");
+    }
+    private void displayTray(String caption, String text){
     	if (!this.isTraySuppported()){
     		return;
     	}
-    		
-    	SystemTray tray = this.getTray();
-    	TrayIcon trayIcon = this.getTrayIcon(tooltip);
-    	
-    	try {
-			tray.add(trayIcon);
-		} catch (AWTException e) {
-			//e.printStackTrace();
-		}
-    	
+
+    	TrayIcon trayIcon = this.getTrayIcon();
     	trayIcon.displayMessage(caption, text, MessageType.INFO);
-    	
     }
 
-    private TrayIcon getTrayIcon(String tooltip){
-    	Image image = this.getImage();
-    	TrayIcon trayIcon = new TrayIcon(image,tooltip);
-    	return trayIcon;
+    private TrayIcon getTrayIcon(){
+    	return this.trayIcon;
     }
     
-	private Image getImage() {
-		return image;
-	}
+    private void setTrayIcon(TrayIcon trayIcon){
+    	this.trayIcon = trayIcon;
+    }
+    
 
-	private void setImage(Image image) {
-		this.image = image;
-	}
 
-	private SystemTray getTray() {
-		return tray;
-	}
-
-	private void setTray(SystemTray tray) {
-		this.tray = tray;
-	}
 
 	private boolean isTraySuppported() {
 		return traySuppported;

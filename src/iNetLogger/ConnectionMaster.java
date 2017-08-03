@@ -19,6 +19,8 @@ public class ConnectionMaster {
 	private SysNotificationManager notifMngr;
 	private boolean keepRunning = true;
 	private boolean verbose = false;
+	
+	private boolean lastInternetConnected = false;
 
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
@@ -140,7 +142,7 @@ public class ConnectionMaster {
 		long pauseTime;
 		long startTime;
 		boolean iNetConnected;
-		boolean previousInetConnected = false;
+
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
 
@@ -150,14 +152,15 @@ public class ConnectionMaster {
 		boolean firstRun = true;
 		boolean fileWriteOK = true;
 
-		//master.getLogger().logStartLogging();
-
 		Runtime.getRuntime().addShutdownHook(new iNetLoggerShutdownHook(master));
 
 		startTime = System.currentTimeMillis();
 		
 		while (master.isKeepRunning()){
 			fileWriteOK = master.getLogger().writeQueuedEntriesToFile();
+			if (!fileWriteOK){
+				master.getNotifMngr().displayErrorWriting();
+			}
 			pauseTime = nextCheckTime - startTime;
 			if (pauseTime>0){
 				try {
@@ -170,7 +173,7 @@ public class ConnectionMaster {
 				}
 			}
 			startTime = System.currentTimeMillis();
-			previousIfaceConnected = master.getInterfaceCheck().isPrevConnected();
+			previousIfaceConnected = master.wasLastNetworkConnected(); //this method gets updated automatically, so save previous result
 
 			if (master.getInterfaceCheck().isNetworkConnected()){
 				iNetConnected = false;
@@ -186,7 +189,7 @@ public class ConnectionMaster {
 					}
 					else if(tmpLastConnected){connectionChangedArray[i] = true;}
 				}
-				if (iNetConnected != previousInetConnected && !firstRun){ //Internet connection status change
+				if (iNetConnected != master.wasLastInternetConnected() && !firstRun){ //Internet connection status change
 					if (iNetConnected){
 						master.notifyInternetStatus(true);
 					}
@@ -211,26 +214,30 @@ public class ConnectionMaster {
 						}
 					}
 				}
-				if (firstRun){
-					master.getLogger().logStartLogging(true, iNetConnected);
-				}
 				if (!previousIfaceConnected && !firstRun){
 					master.notifyInterfaceStatus(true,iNetConnected);
 				}
-				previousInetConnected = iNetConnected;
-				if (firstRun){
-					master.getLogger().logStartLogging(true, iNetConnected);
-					firstRun = false;
-				}
+				master.setLastInternetConnected(iNetConnected);
 			}
-			else if(previousIfaceConnected || firstRun){
-				if (firstRun){
-					master.getLogger().logStartLogging(false, false);
-					firstRun = false;
-				}
-				else{
+			else if(previousIfaceConnected && !firstRun){
 					master.notifyInterfaceStatus(false,false);
-					}
+					
+			}
+			if (firstRun){ //add some initial entries
+				master.getLogger().logStartLogging(master.wasLastNetworkConnected(), master.wasLastInternetConnected());
+				
+				for (int i=0; i < master.getConnectionList().size(); i++){
+						if (master.getConnectionList().get(i).wasPrevConnected()){
+							//We are connected to this connection!
+							master.notifyIndividualConnectionStatus(true, master.getConnectionList().get(i).getAddressString());
+						}
+						else {
+							//We are not connected to this connection!
+							master.notifyIndividualConnectionStatus(false, master.getConnectionList().get(i).getAddressString());
+						}
+				}
+				
+				firstRun = false;
 			}
 
 			nextCheckTime = startTime + (master.getSampleRate() * 1000);
@@ -324,7 +331,7 @@ public class ConnectionMaster {
 	}
 	public void endProgram(){
 		this.setKeepRunning(false);
-		this.getLogger().logStopLogging(this.wasLocalLastConnected(),this.wasInternetLastConnected());
+		this.getLogger().logStopLogging(this.wasLastNetworkConnected(),this.wasLastInternetConnected());
 	}
 
 	private boolean isKeepRunning() {
@@ -341,6 +348,18 @@ public class ConnectionMaster {
 
 	private void setVerbose(boolean verbose) {
 		this.verbose = verbose;
+	}
+
+	private boolean wasLastInternetConnected() {
+		return lastInternetConnected;
+	}
+
+	private void setLastInternetConnected(boolean lastInternetConnected) {
+		this.lastInternetConnected = lastInternetConnected;
+	}
+
+	private boolean wasLastNetworkConnected() {
+		return this.getInterfaceCheck().isPrevConnected();
 	}
 
 }
