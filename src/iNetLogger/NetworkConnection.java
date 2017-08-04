@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 
 /*
  * This class is to hold network connections to check.
+ * 
+ * Created by Ben Brust 2017
  */
 
 public class NetworkConnection {

@@ -9,6 +9,8 @@ import java.util.Enumeration;
 /*
  * This class is used to check if a network interface is
  * connected to the local network.
+ * 
+ * Created by Ben Brust 2017
  */
 
 public class NetworkInterfaceCheck {
@@ -99,10 +101,10 @@ public class NetworkInterfaceCheck {
 
 	public void setLocalAddressString(String localAddressString) {
 		if(localAddressString != null && !localAddressString.isEmpty()) {
-			return;
+			this.setHasLocalAddress(true);
+			this.localAddressString = localAddressString;
 		}
-		this.setHasLocalAddress(true);
-		this.localAddressString = localAddressString;
+		return;
 	}
 
 }

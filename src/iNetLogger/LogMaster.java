@@ -9,7 +9,10 @@ import java.util.AbstractList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-
+/*
+ *
+ * Created by Ben Brust 2017
+ */
 public class LogMaster {
 
 	/*

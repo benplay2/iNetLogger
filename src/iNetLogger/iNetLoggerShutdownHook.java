@@ -1,5 +1,8 @@
 package iNetLogger;
-
+/*
+ * 
+ * Created by Ben Brust 2017
+ */
 public class iNetLoggerShutdownHook extends Thread {
 
 	private ConnectionMaster master;

@@ -1,5 +1,8 @@
 package iNetLogger;
-
+/*
+ * 
+ * Created by Ben Brust 2017
+ */
 public class ConnectionCSVEntry extends CSVEntry{
 	private String timestamp;
 	private String address;
@@ -13,7 +16,8 @@ public class ConnectionCSVEntry extends CSVEntry{
 
 	@Override
 	public String getCSVLine() {
-		return this.timestamp + "," + this.address + "," + String.valueOf(this.connected);
+		String connectedStr = this.connected? "1" : "0";
+		return this.timestamp + "," + this.address + "," + connectedStr;
 	}
 	@Override
 	public String getCSVHeader() {

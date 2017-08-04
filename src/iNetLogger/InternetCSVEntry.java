@@ -1,5 +1,8 @@
 package iNetLogger;
-
+/*
+ * 
+ * Created by Ben Brust 2017
+ */
 public class InternetCSVEntry extends CSVEntry{
 	private String timestamp;
 	private boolean localConnected;
@@ -21,7 +24,10 @@ public class InternetCSVEntry extends CSVEntry{
 
 	@Override
 	public String getCSVLine() {
-		return this.timestamp + "," + String.valueOf(this.localConnected) + "," + String.valueOf(this.internetConnected) + "," + String.valueOf(this.programStatus);
+		String localString  = this.localConnected? "1" : "0";
+		String internetString  = this.internetConnected? "1" : "0";
+		
+		return this.timestamp + "," + localString + "," + internetString + "," + String.valueOf(this.programStatus);
 	}
 
 	@Override

@@ -1,12 +1,13 @@
 package iNetLogger;
 
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.apache.commons.cli.*;
 /*
  * This class manages NetworkConnections, checking them at the desired test rate.
+ * 
+ * Created by Ben Brust 2017
  */
 
 public class ConnectionMaster {
@@ -19,6 +20,7 @@ public class ConnectionMaster {
 	private SysNotificationManager notifMngr;
 	private boolean keepRunning = true;
 	private boolean verbose = false;
+	private int maxMSBtwFileMsg = 5*60*1000;
 	
 	private boolean lastInternetConnected = false;
 
@@ -151,6 +153,7 @@ public class ConnectionMaster {
 		Iterator<NetworkConnection> networkConnIter;
 		boolean firstRun = true;
 		boolean fileWriteOK = true;
+		long lastFileWriteErrorNotification = 0;
 
 		Runtime.getRuntime().addShutdownHook(new iNetLoggerShutdownHook(master));
 
@@ -158,7 +161,8 @@ public class ConnectionMaster {
 		
 		while (master.isKeepRunning()){
 			fileWriteOK = master.getLogger().writeQueuedEntriesToFile();
-			if (!fileWriteOK){
+			if (!firstRun && !fileWriteOK && ((startTime - lastFileWriteErrorNotification) > master.getMaxMSBtwFileMsg())){
+				lastFileWriteErrorNotification = startTime;
 				master.getNotifMngr().displayErrorWriting();
 			}
 			pauseTime = nextCheckTime - startTime;
@@ -224,8 +228,8 @@ public class ConnectionMaster {
 					
 			}
 			if (firstRun){ //add some initial entries
-				master.getLogger().logStartLogging(master.wasLastNetworkConnected(), master.wasLastInternetConnected());
 				
+				master.notifyStartMonitoring(master.wasLastNetworkConnected(), master.wasLastInternetConnected());
 				for (int i=0; i < master.getConnectionList().size(); i++){
 						if (master.getConnectionList().get(i).wasPrevConnected()){
 							//We are connected to this connection!
@@ -290,6 +294,10 @@ public class ConnectionMaster {
 			}
 
 		}
+	}
+	public void notifyStartMonitoring(boolean localConnected, boolean internetConnected){
+		this.getLogger().logStartLogging(localConnected, internetConnected);
+		//TODO: also notify user with system notification
 	}
 	public static int getTimeSeconds(){
 		return (int)(System.currentTimeMillis() / 1000);
@@ -360,6 +368,14 @@ public class ConnectionMaster {
 
 	private boolean wasLastNetworkConnected() {
 		return this.getInterfaceCheck().isPrevConnected();
+	}
+
+	private int getMaxMSBtwFileMsg() {
+		return maxMSBtwFileMsg;
+	}
+
+	private void setMaxMSBtwFileMsg(int maxMSBtwFileMsg) {
+		this.maxMSBtwFileMsg = maxMSBtwFileMsg;
 	}
 
 }

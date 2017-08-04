@@ -2,7 +2,10 @@ package iNetLogger;
 
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
-
+/*
+ * 
+ * Created by Ben Brust 2017
+ */
 public class SysNotificationManager {
 
 	private TrayIcon trayIcon;
