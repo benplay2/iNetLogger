@@ -181,6 +181,9 @@ public class LogMaster {
 				this.setLastSavedTime(curTime);
 			}
 		}
+		else{
+			success = true; //Not long enough time before writing again
+		}
 		return success;
 
 	}

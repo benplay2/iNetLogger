@@ -71,6 +71,9 @@ public class SysNotificationManager {
         trayIcon.displayMessage("Hello, World", "notification demo", MessageType.INFO);
     }
     
+    public void displayStartLogging(){
+    	this.displayTray("Starting Logging","iNetLogger has started connection logging.");
+    }
     public void displayInterfaceConnected(){
     	this.displayTray("Interface Connected!", "Now connected to local network");
     }

@@ -161,7 +161,7 @@ public class ConnectionMaster {
 		
 		while (master.isKeepRunning()){
 			fileWriteOK = master.getLogger().writeQueuedEntriesToFile();
-			if (!firstRun && !fileWriteOK && ((startTime - lastFileWriteErrorNotification) > master.getMaxMSBtwFileMsg())){
+			if (!fileWriteOK && ((startTime - lastFileWriteErrorNotification) > master.getMaxMSBtwFileMsg())){
 				lastFileWriteErrorNotification = startTime;
 				master.getNotifMngr().displayErrorWriting();
 			}
@@ -297,7 +297,7 @@ public class ConnectionMaster {
 	}
 	public void notifyStartMonitoring(boolean localConnected, boolean internetConnected){
 		this.getLogger().logStartLogging(localConnected, internetConnected);
-		//TODO: also notify user with system notification
+		this.getNotifMngr().displayStartLogging();
 	}
 	public static int getTimeSeconds(){
 		return (int)(System.currentTimeMillis() / 1000);
@@ -338,6 +338,7 @@ public class ConnectionMaster {
 		this.notifMngr = notifMngr;
 	}
 	public void endProgram(){
+		System.out.println("Exiting.");
 		this.setKeepRunning(false);
 		this.getLogger().logStopLogging(this.wasLastNetworkConnected(),this.wasLastInternetConnected());
 	}
