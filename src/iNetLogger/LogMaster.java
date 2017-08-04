@@ -73,6 +73,58 @@ public class LogMaster {
 		 * 
 		 * If not, add a new entry that says logging stopped at the last time logged.
 		 */
+		BufferedReader br;
+		//Get last logged time in timeLog (If file does not exist or is empty, do nothing and return)
+		try {
+			br = FileUtils.getFileReader(this.getTimeLogFullPath());
+		} catch (FileNotFoundException e) {
+			//File not created, simply return
+			return;
+		}
+		String curLine = null;
+		try {
+			curLine = br.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Error: unable to read last logged time from file. Cannot check to ensure logged last program stop.");
+			try {
+				br.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return;
+		}
+		try {
+			br.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			//Not sure what to do with this error
+			e1.printStackTrace();
+		}
+		if (curLine == null){
+			//Nothing was saved, just return
+			
+			return;
+		}
+		long lastLoggedTime = Long.valueOf(curLine);
+		
+		//get reader for internet logger. (If file does not exist or is empty, do nothing and return)
+		try{
+			br = FileUtils.getFileReader(this.getInternetLogFullPath());
+		}catch (FileNotFoundException e){
+			//File doesn't exist... do nothing
+			return;
+		}
+		//Go through internet logger, check if the last entry was shutting down and get that time
+		
+		//If last entry was not shutting down, add an entry of shutting down for the last logged time and return
+		
+		//If the last time logged shutting down is within tolerance (maxTimeDiffToSave), do nothing and return
+		
+		//Otherwise, add an entry of shutting down for the last logged time and return
+		
 	}
 	
 	public String getInternetLogFullPath(){
