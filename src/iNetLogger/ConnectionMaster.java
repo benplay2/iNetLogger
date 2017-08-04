@@ -343,7 +343,7 @@ public class ConnectionMaster {
 	}
 
 	private boolean isKeepRunning() {
-		return keepRunning;
+		return this.keepRunning;
 	}
 
 	private void setKeepRunning(boolean keepRunning) {

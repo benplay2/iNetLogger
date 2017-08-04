@@ -2,6 +2,8 @@ package iNetLogger;
 
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 /*
  * 
  * Created by Ben Brust 2017
@@ -29,15 +31,29 @@ public class SysNotificationManager {
 		}
 		if (this.isTraySuppported()){
 			this.setTrayIcon(trayIcon);
+			this.AddMenu();
 		}
 	}
 
 	public static void main(String[] args) throws AWTException, java.net.MalformedURLException {
 		SysNotificationManager td = new SysNotificationManager();
 		td.displayInternetConnected();
-        
-    }
 
+	}
+	private void AddMenu(){
+
+		PopupMenu menu = new PopupMenu();
+
+		MenuItem closeItem = new MenuItem("Close");
+		closeItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		menu.add(closeItem);
+		
+		this.getTrayIcon().setPopupMenu(menu);
+	}
     public void displayTrayDemo() throws AWTException, java.net.MalformedURLException {
         //Obtain only one instance of the SystemTray object
         SystemTray tray = SystemTray.getSystemTray();
@@ -86,6 +102,7 @@ public class SysNotificationManager {
 
     	TrayIcon trayIcon = this.getTrayIcon();
     	trayIcon.displayMessage(caption, text, MessageType.INFO);
+    		
     }
 
     private TrayIcon getTrayIcon(){
