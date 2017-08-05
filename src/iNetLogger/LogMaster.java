@@ -45,7 +45,7 @@ public class LogMaster {
 	private String timeLogFilename;
 	
 	private long lastSavedTime = 0;
-	private int maxTimeDiffToSave = 5*60; //Time (s) after which to save last log time
+	private long maxTimeDiffToSave = 5*60*1000; //Time (ms) after which to save last log time
 	
 	private int fileIOExceptionCountCSV = 0;
 	
@@ -65,7 +65,6 @@ public class LogMaster {
 	}
 	
 	public void addMissingStopEntry(){
-		//TODO: Write. Check if we have a last time in time log
 		/*
 		 * If we do have a last time, see if the last time logged in
 		 * internet log is within tolerance or if an entry exists that
@@ -73,6 +72,7 @@ public class LogMaster {
 		 * 
 		 * If not, add a new entry that says logging stopped at the last time logged.
 		 */
+		long startTime = System.currentTimeMillis();
 		BufferedReader br;
 		//Get last logged time in timeLog (If file does not exist or is empty, do nothing and return)
 		try {
@@ -85,14 +85,13 @@ public class LogMaster {
 		try {
 			curLine = br.readLine();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Error: unable to read last logged time from file. Cannot check to ensure logged last program stop.");
 			try {
 				br.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				//e1.printStackTrace();
+				return;
 			}
 			return;
 		}
@@ -100,15 +99,23 @@ public class LogMaster {
 			br.close();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			//Not sure what to do with this error
+			//Not sure what to do with this error. Return? Error out?
 			e1.printStackTrace();
+			System.out.println("Unable to close reader. Exiting.");
+			System.exit(3);
 		}
 		if (curLine == null){
 			//Nothing was saved, just return
-			
 			return;
 		}
-		long lastLoggedTime = Long.valueOf(curLine);
+		
+		long lastLoggedTime;
+		try {
+			lastLoggedTime = Long.valueOf(curLine);
+		} catch (NumberFormatException e){
+			//Cannot read time
+			return;
+		}
 		
 		//get reader for internet logger. (If file does not exist or is empty, do nothing and return)
 		try{
@@ -117,13 +124,60 @@ public class LogMaster {
 			//File doesn't exist... do nothing
 			return;
 		}
-		//Go through internet logger, check if the last entry was shutting down and get that time
 		
+		String lastLine = null;
+		//Go through Internet logger, check if the last entry was shutting down and get that time
+		try {
+			while ((curLine = br.readLine()) != null)
+			{
+			    lastLine = curLine;
+			}
+		} catch (IOException e) {
+			//e.printStackTrace();
+			System.out.println("Error: Unable to read internet connection CSV. Cannot check to ensure logged last program stop.");
+			return;
+		}
+		try {
+			br.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			//Not sure what to do with this error. Return? Error out?
+			e1.printStackTrace();
+			System.out.println("Unable to close reader. Exiting.");
+			System.exit(3);
+		}
+		InternetCSVEntry lastEntry = null;
+		if (lastLine == null){
+			//We need to add the entry.
+			this.logStopLogging(lastLoggedTime, false, false); //not sure what to put for connection here...
+		}else{//we have a line
+			try {
+				lastEntry = new InternetCSVEntry(lastLine);
+			} catch (IncompatibleLineException e) {
+				//e.printStackTrace();
+				//Can't read the line. Could be header or something wrong...
+				return;
+			}
+		}
+
 		//If last entry was not shutting down, add an entry of shutting down for the last logged time and return
+		if (lastEntry.getProgramStatus() != -1){
+			this.logStopLogging(lastLoggedTime, lastEntry.isLocalConnected(), lastEntry.isInternetConnected());
+			return;
+		} else{
+			//If the last time logged shutting down is within tolerance (maxTimeDiffToSave), do nothing and return
+			if (startTime - lastEntry.getTimestamp() < this.getMaxTimeDiffToSave()){
+				return;
+			}else{
+				//Otherwise, add an entry of shutting down for the last logged time and return
+				this.logStopLogging(lastLoggedTime, lastEntry.isLocalConnected(), lastEntry.isInternetConnected());
+				return;
+			}
+		}
+
 		
-		//If the last time logged shutting down is within tolerance (maxTimeDiffToSave), do nothing and return
 		
-		//Otherwise, add an entry of shutting down for the last logged time and return
+		
 		
 	}
 	
@@ -317,7 +371,7 @@ public class LogMaster {
 	 * Add an entry of stop logging to the stopTime provided.
 	 */
 	public void logStopLogging(long stopTime, boolean localConnected, boolean internetConnected){
-		this.getInternetEntries().add(new InternetCSVEntry(LogMaster.getCSVTimestamp(stopTime),localConnected, internetConnected, -1));
+		this.getInternetEntries().add(new InternetCSVEntry(stopTime,localConnected, internetConnected, -1));
 		writeToInternetLog();
 	}
 
@@ -350,12 +404,7 @@ public class LogMaster {
 	private LinkedList<ConnectionCSVEntry> getConnectionEntries() {
 		return connectionEntries;
 	}
-	public static String getCSVTimestamp(){
-		return new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new java.util.Date());
-	}
-	public static String getCSVTimestamp(long timeMS){
-		return new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new java.util.Date(timeMS));
-	}
+	
 
 	public String getInternetLogFilename() {
 		return internetLogFilename;
@@ -386,10 +435,10 @@ public class LogMaster {
 	private void setLastSavedTime(long lastSavedTime) {
 		this.lastSavedTime = lastSavedTime;
 	}
-	public int getMaxTimeDiffToSave() {
+	public long getMaxTimeDiffToSave() {
 		return maxTimeDiffToSave;
 	}
-	public void setMaxTimeDiffToSave(int maxTimeDiffToSave) {
+	public void setMaxTimeDiffToSave(long maxTimeDiffToSave) {
 		this.maxTimeDiffToSave = maxTimeDiffToSave;
 	}
 	private int getFileIOExceptionCountCSV() {
