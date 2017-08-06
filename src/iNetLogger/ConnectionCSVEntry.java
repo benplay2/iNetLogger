@@ -7,12 +7,11 @@ import java.text.ParseException;
  * Created by Ben Brust 2017
  */
 public class ConnectionCSVEntry extends CSVEntry{
-	private long timestamp;
 	private String address;
 	private boolean connected;
 	
 	public ConnectionCSVEntry(String connectionAddress, boolean connected){
-		this.timestamp = System.currentTimeMillis();
+		this.setTimestamp(System.currentTimeMillis());
 		this.address = connectionAddress;
 		this.connected = connected;
 	}
@@ -25,9 +24,9 @@ public class ConnectionCSVEntry extends CSVEntry{
 		}
 
 		try {
-			this.timestamp = CSVEntry.getTimeFromString(entries[0]);
+			this.setTimestamp(CSVEntry.getTimeFromString(entries[0]));
 			this.address = entries[1];
-			this.connected = Boolean.valueOf(entries[2]);
+			this.connected = Integer.valueOf(entries[2]) == 1 ? true : false;
 		} catch (ParseException e) {
 			//e.printStackTrace();
 			throw new IncompatibleLineException();
@@ -38,7 +37,7 @@ public class ConnectionCSVEntry extends CSVEntry{
 	@Override
 	public String getCSVLine() {
 		String connectedStr = this.connected? "1" : "0";
-		return CSVEntry.getCSVTimestamp(this.timestamp) + "," + this.address + "," + connectedStr;
+		return CSVEntry.getCSVTimestamp(this.getTimestamp()) + "," + this.address + "," + connectedStr;
 	}
 	@Override
 	public String getCSVHeader() {

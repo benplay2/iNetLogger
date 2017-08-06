@@ -13,7 +13,7 @@ import org.apache.commons.cli.*;
 public class ConnectionMaster {
 
 
-	private int sampleRate = 5; // Sample rate in seconds
+	private long sampleRate = 5 * 1000; // Sample rate in ms
 	private NetworkInterfaceCheck interfaceCheck;
 	private LinkedList<NetworkConnection> connectionList = new LinkedList<NetworkConnection>(); //holds all connections to check
 	private LogMaster logger;
@@ -123,11 +123,11 @@ public class ConnectionMaster {
 		}
 		if (cmd.hasOption("checkRate")){
 			String checkRate = cmd.getOptionValue("checkRate");
-			master.setSampleRate(Integer.parseInt(checkRate.trim()));
+			master.setSampleRate(Integer.parseInt(checkRate.trim()) * 1000);
 
 		}
 		if (master.isVerbose()){
-			System.out.println("Checking connectivity every " + master.getSampleRate() + " seconds");
+			System.out.println("Checking connectivity every " + master.getSampleRate()/1000 + " seconds");
 		}
 		String savePath;
 		if (cmd.hasOption("savePath")){
@@ -142,6 +142,7 @@ public class ConnectionMaster {
 		}
 
 		long nextCheckTime = System.currentTimeMillis();
+		long endLoopTime = nextCheckTime;
 		long pauseTime;
 		long startTime;
 		boolean iNetConnected;
@@ -167,15 +168,19 @@ public class ConnectionMaster {
 				master.getNotifMngr().displayErrorWriting();
 			}
 			pauseTime = nextCheckTime - startTime;
+			
 			if (pauseTime>0){
 				try {
 					Thread.sleep(pauseTime);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					//master.endProgram();
-					//run = false;
-					break;
+					System.exit(0);
 				}
+			}
+			if (System.currentTimeMillis() - startTime > (master.getSampleRate() * 2) && !firstRun){
+				//Detected computer sleep event...
+				master.notifyStopMonitoring(endLoopTime);
+				firstRun = true;
 			}
 			startTime = System.currentTimeMillis();
 			previousIfaceConnected = master.wasLastNetworkConnected(); //this method gets updated automatically, so save previous result
@@ -230,7 +235,7 @@ public class ConnectionMaster {
 			}
 			if (firstRun){ //add some initial entries
 				
-				master.notifyStartMonitoring(master.wasLastNetworkConnected(), master.wasLastInternetConnected());
+				master.notifyStartMonitoring();
 				for (int i=0; i < master.getConnectionList().size(); i++){
 						if (master.getConnectionList().get(i).wasPrevConnected()){
 							//We are connected to this connection!
@@ -245,7 +250,8 @@ public class ConnectionMaster {
 				firstRun = false;
 			}
 
-			nextCheckTime = startTime + (master.getSampleRate() * 1000);
+			nextCheckTime = startTime + master.getSampleRate();
+			endLoopTime = System.currentTimeMillis();
 		}
 		//master.getLogger().logStopLogging();
 
@@ -300,15 +306,25 @@ public class ConnectionMaster {
 		this.getLogger().logStartLogging(localConnected, internetConnected);
 		this.getNotifMngr().displayStartLogging();
 	}
+	public void notifyStartMonitoring(){
+		this.getLogger().logStartLogging(this.wasLastNetworkConnected(), this.wasLastInternetConnected());
+		this.getNotifMngr().displayStartLogging();
+	}
+	public void notifyStopMonitoring(){
+		this.getLogger().logStopLogging(this.wasLastNetworkConnected(),this.wasLastInternetConnected());
+	}
+	public void notifyStopMonitoring(long stopTime){
+		this.getLogger().logStopLogging(stopTime, this.wasLastNetworkConnected(),this.wasLastInternetConnected());
+	}
 	public static int getTimeSeconds(){
 		return (int)(System.currentTimeMillis() / 1000);
 	}
 
-	public int getSampleRate() {
+	public long getSampleRate() {
 		return this.sampleRate;
 	}
 
-	public void setSampleRate(int sampleRate) {
+	public void setSampleRate(long sampleRate) {
 		this.sampleRate = sampleRate;
 	}
 
@@ -341,7 +357,7 @@ public class ConnectionMaster {
 	public void endProgram(){
 		System.out.println("Exiting.");
 		this.setKeepRunning(false);
-		this.getLogger().logStopLogging(this.wasLastNetworkConnected(),this.wasLastInternetConnected());
+		this.notifyStopMonitoring();
 	}
 
 	private boolean isKeepRunning() {

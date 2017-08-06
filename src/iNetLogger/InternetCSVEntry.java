@@ -7,19 +7,18 @@ import java.text.ParseException;
  * Created by Ben Brust 2017
  */
 public class InternetCSVEntry extends CSVEntry{
-	private long timestamp;
 	private boolean localConnected;
 	private boolean internetConnected;
 	private int programStatus;
 	
 	public InternetCSVEntry(boolean localConnected, boolean internetConnected, int programStatus){
-		this.timestamp = System.currentTimeMillis();
+		this.setTimestamp(System.currentTimeMillis());
 		this.localConnected = localConnected;
 		this.internetConnected = internetConnected;
 		this.programStatus = programStatus;
 	}
 	public InternetCSVEntry(long entryTime, boolean localConnected, boolean internetConnected, int programStatus){
-		this.timestamp = entryTime;
+		this.setTimestamp(entryTime);
 		this.localConnected = localConnected;
 		this.internetConnected = internetConnected;
 		this.programStatus = programStatus;
@@ -35,9 +34,9 @@ public class InternetCSVEntry extends CSVEntry{
 		}
 
 		try {
-			this.timestamp = CSVEntry.getTimeFromString(entries[0]);
-			this.localConnected = Boolean.valueOf(entries[1]);
-			this.internetConnected = Boolean.valueOf(entries[2]);
+			this.setTimestamp(CSVEntry.getTimeFromString(entries[0]));
+			this.localConnected = Integer.valueOf(entries[1]) == 1 ? true : false;
+			this.internetConnected = Integer.valueOf(entries[2]) == 1 ? true : false;
 			this.programStatus = Integer.valueOf(entries[3]);
 		} catch (ParseException e) {
 			//e.printStackTrace();
@@ -46,9 +45,6 @@ public class InternetCSVEntry extends CSVEntry{
 		
 	}
 
-	public long getTimestamp(){
-		return this.timestamp;
-	}
 	public boolean isLocalConnected(){
 		return this.localConnected;
 	}
@@ -57,6 +53,12 @@ public class InternetCSVEntry extends CSVEntry{
 	}
 	public int getProgramStatus(){
 		return this.programStatus;
+	}
+	public boolean isOpening(){
+		return this.getProgramStatus() == 1;
+	}
+	public boolean isClosing(){
+		return this.getProgramStatus() == -1;
 	}
 	
 	@Override

@@ -96,7 +96,7 @@ public class SysNotificationManager {
     	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to \"" + filename + "\". Close any applications using this file or iNetLogger will quit.");
     }
     public void displayErrorWriting(){
-    	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to at least one of the log files. Close any applications using the files or iNetLogger will quit.");
+    	this.displayTray("Unable to write to file!", "iNetLogger is unable to write to at least one of the log files. Close any applications using the files.");
     }
     private void displayTray(String caption, String text){
     	if (!this.isTraySuppported()){

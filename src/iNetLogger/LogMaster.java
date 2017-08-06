@@ -161,7 +161,7 @@ public class LogMaster {
 		}
 
 		//If last entry was not shutting down, add an entry of shutting down for the last logged time and return
-		if (lastEntry.getProgramStatus() != -1){
+		if (lastEntry.isClosing()){
 			this.logStopLogging(lastLoggedTime, lastEntry.isLocalConnected(), lastEntry.isInternetConnected());
 			return;
 		} else{
