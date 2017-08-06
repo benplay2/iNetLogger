@@ -72,6 +72,7 @@ public class ConnectionMaster {
 		options.addOption(savePathInput);
 
 
+		String helpHeader = "Log Internet connection status to CSV.\n\n";
 
 		CommandLineParser parser = new DefaultParser();
 		HelpFormatter formatter = new HelpFormatter();
@@ -81,14 +82,14 @@ public class ConnectionMaster {
 			cmd = parser.parse(options, args);
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
-			formatter.printHelp("iNetLogger", options);
+			formatter.printHelp("iNetLogger", helpHeader, options, "", true); 
 
 			System.exit(1);
 			return;
 		}
 
 		if (cmd.hasOption("help")){ 
-			formatter.printHelp("iNetLogger", options); 
+			formatter.printHelp("iNetLogger", helpHeader, options, "", true); 
 			System.exit(1); 
 			return;
 		}
