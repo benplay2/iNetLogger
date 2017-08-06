@@ -12,13 +12,13 @@ public class InternetCSVEntry extends CSVEntry{
 	private int programStatus;
 	
 	public InternetCSVEntry(boolean localConnected, boolean internetConnected, int programStatus){
-		this.setTimestamp(System.currentTimeMillis());
+		super(System.currentTimeMillis());
 		this.localConnected = localConnected;
 		this.internetConnected = internetConnected;
 		this.programStatus = programStatus;
 	}
 	public InternetCSVEntry(long entryTime, boolean localConnected, boolean internetConnected, int programStatus){
-		this.setTimestamp(entryTime);
+		super(entryTime);
 		this.localConnected = localConnected;
 		this.internetConnected = internetConnected;
 		this.programStatus = programStatus;

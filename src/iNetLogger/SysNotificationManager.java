@@ -18,7 +18,7 @@ public class SysNotificationManager {
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()){
 			SystemTray tray = SystemTray.getSystemTray();
-			Image image = Toolkit.getDefaultToolkit().createImage("icon_v5.png"); //TODO: get an icon...
+			Image image = Toolkit.getDefaultToolkit().createImage("icon_v6.png");
 			trayIcon = new TrayIcon(image,"iNetLogger");
 			trayIcon.setImageAutoSize(true);
 			

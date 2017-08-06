@@ -11,7 +11,7 @@ public class ConnectionCSVEntry extends CSVEntry{
 	private boolean connected;
 	
 	public ConnectionCSVEntry(String connectionAddress, boolean connected){
-		this.setTimestamp(System.currentTimeMillis());
+		super(System.currentTimeMillis());
 		this.address = connectionAddress;
 		this.connected = connected;
 	}
@@ -24,7 +24,7 @@ public class ConnectionCSVEntry extends CSVEntry{
 		}
 
 		try {
-			this.setTimestamp(CSVEntry.getTimeFromString(entries[0]));
+			super(CSVEntry.getTimeFromString(entries[0]));
 			this.address = entries[1];
 			this.connected = Integer.valueOf(entries[2]) == 1 ? true : false;
 		} catch (ParseException e) {

@@ -13,6 +13,11 @@ public abstract class CSVEntry {
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 	private static SimpleDateFormat dateFormatNoTime = new SimpleDateFormat("MM/dd/yyyy");
 	
+	public CSVEntry(long timestamp){
+		this.setTimestamp(timestamp);
+	}
+	
+	
 	public abstract String getCSVLine();
 	
 	public abstract String getCSVHeader();
@@ -42,7 +47,7 @@ public abstract class CSVEntry {
 		return  CSVEntry.getCSVTimestamp(this.getTimestamp());
 	}
 
-	protected void setTimestamp(long timestamp) {
+	private void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
 }
