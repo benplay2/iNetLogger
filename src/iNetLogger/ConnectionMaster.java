@@ -392,6 +392,7 @@ public class ConnectionMaster {
 		return maxMSBtwFileMsg;
 	}
 
+	@SuppressWarnings("unused")
 	private void setMaxMSBtwFileMsg(int maxMSBtwFileMsg) {
 		this.maxMSBtwFileMsg = maxMSBtwFileMsg;
 	}

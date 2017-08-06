@@ -1,14 +1,11 @@
 package iNetLogger;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 /*
  *
  * Created by Ben Brust 2017
@@ -182,13 +179,13 @@ public class LogMaster {
 	}
 	
 	public String getInternetLogFullPath(){
-		return new File(this.getSavePath(), this.getInternetLogFilename()).toString();
+		return FileUtils.fullfile(this.getSavePath(), this.getInternetLogFilename());
 	}
 	public String getConnectionLogFullPath(){
-		return new File(this.getSavePath(), this.getConnectionLogFilename()).toString();
+		return FileUtils.fullfile(this.getSavePath(), this.getConnectionLogFilename());
 	}
 	public String getTimeLogFullPath(){
-		return new File(this.getSavePath(), this.getTimeLogFilename()).toString();
+		return FileUtils.fullfile(this.getSavePath(), this.getTimeLogFilename());
 	}
 	
 	private boolean writeToInternetLog(){
@@ -454,6 +451,7 @@ public class LogMaster {
 	private int getMaxFileIOExceptionCount() {
 		return maxFileIOExceptionCount;
 	}
+	@SuppressWarnings("unused")
 	private void setMaxFileIOExceptionCount(int maxFileIOExceptionCount) {
 		this.maxFileIOExceptionCount = maxFileIOExceptionCount;
 	}

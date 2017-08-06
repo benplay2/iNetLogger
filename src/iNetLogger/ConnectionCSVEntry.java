@@ -24,7 +24,7 @@ public class ConnectionCSVEntry extends CSVEntry{
 		}
 
 		try {
-			super(CSVEntry.getTimeFromString(entries[0]));
+			this.setTimestamp(CSVEntry.getTimeFromString(entries[0]));
 			this.address = entries[1];
 			this.connected = Integer.valueOf(entries[2]) == 1 ? true : false;
 		} catch (ParseException e) {

@@ -16,6 +16,9 @@ public abstract class CSVEntry {
 	public CSVEntry(long timestamp){
 		this.setTimestamp(timestamp);
 	}
+	public CSVEntry(){
+		//Need to manually set the timestamp.
+	}
 	
 	
 	public abstract String getCSVLine();
@@ -47,7 +50,7 @@ public abstract class CSVEntry {
 		return  CSVEntry.getCSVTimestamp(this.getTimestamp());
 	}
 
-	private void setTimestamp(long timestamp) {
+	protected void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
 }

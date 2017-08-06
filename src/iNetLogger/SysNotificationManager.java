@@ -50,7 +50,24 @@ public class SysNotificationManager {
 				System.exit(0);
 			}
 		});
+		
+		MenuItem aboutItem = new MenuItem("About");
+		aboutItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//TODO: write.
+			}
+		});
+		MenuItem analyzeItem = new MenuItem("Analyze");
+		analyzeItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//TODO: write.
+			}
+		});
+		
+		menu.add(analyzeItem);
+		menu.add(aboutItem);
 		menu.add(closeItem);
+		
 		
 		this.getTrayIcon().setPopupMenu(menu);
 	}

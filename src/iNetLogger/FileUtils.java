@@ -108,4 +108,7 @@ public class FileUtils {
 		bw.close();
 		return;
 	}
+	public static String fullfile(String pathName, String fileName){
+		return new File(pathName, fileName).toString();
+	}
 }

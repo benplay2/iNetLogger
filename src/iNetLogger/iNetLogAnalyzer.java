@@ -1,6 +1,7 @@
 package iNetLogger;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
@@ -22,7 +23,7 @@ public class iNetLogAnalyzer {
 
 	public static void main(String[] args){
 
-		//args = new 	String[] {"-d08/02/2017-8/6/2017","iNetLog.csv"};
+		args = new 	String[] {"-d08/06/2017-8/6/2017","iNetLog.csv"};
 
 		/*
 		 * First, take in some inputs
@@ -38,7 +39,7 @@ public class iNetLogAnalyzer {
 		options.addOption(verboseInput);
 
 		Option dateRangeInput = Option.builder("d")
-				.desc("date range in format MM/DD/YYYY-MM/DD/YYYY")
+				.desc("date range in format MM/DD/YYYY-MM/DD/YYYY (startDate is 12am, endDate is 11:59pm)")
 				.numberOfArgs(2)
 				.valueSeparator('-') //Note, not sure if this separator will work
 				.build();
@@ -81,33 +82,41 @@ public class iNetLogAnalyzer {
 		if (cmd.hasOption("d")){
 			String[] dateRange = cmd.getOptionValues("d");
 			try {
-				startTime = CSVEntry.getTimeFromString(dateRange[0]);
-				endTime = CSVEntry.getTimeFromString(dateRange[1]);
+				startTime = CSVEntry.getTimeFromString(dateRange[0]); //startDate includes all of first day
+				endTime = CSVEntry.getTimeFromString(dateRange[1] + " 24:00:00"); //Make endDate include all of the last day
 			} catch (java.text.ParseException e) {
 				e.printStackTrace();
 				System.out.println("Unable to decode dates provided");
 				System.exit(3);
 			}
 		}
+		
 		String fileToAnalyze;
 		if (cmd.getArgs().length != 1){
 			System.out.println("No file to analyze provided. Assuming default 'iNetLog.csv'");
 			fileToAnalyze = "iNetLog.csv";
 		} else{
+			
 			fileToAnalyze = cmd.getArgs()[0];
+			File file = new File(fileToAnalyze);
+			if (file.isDirectory()){
+				System.out.println("No filename to analyze provided. Assuming default 'iNetLog.csv'");
+				fileToAnalyze = FileUtils.fullfile(fileToAnalyze, "iNetLog.csv");
+			}
 		}
 		
-		
+		String analysisTxt = null;
 		try {
-			iNetLogAnalyzer.analyzeINetLogger(fileToAnalyze, verbose, startTime, endTime);
+			analysisTxt = iNetLogAnalyzer.analyzeINetLogger(fileToAnalyze, verbose, startTime, endTime);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Unable to analyze file");
 			System.exit(3);
 		}
+		System.out.print(analysisTxt);
 	}
-	public static void analyzeINetLogger(String filename, boolean verbose) throws IOException{
-		iNetLogAnalyzer.analyzeINetLogger(filename, verbose, 0, System.currentTimeMillis());
+	public static String analyzeINetLogger(String filename, boolean verbose) throws IOException{
+		return iNetLogAnalyzer.analyzeINetLogger(filename, verbose, 0, System.currentTimeMillis());
 	}
 	
 	/*
@@ -115,7 +124,7 @@ public class iNetLogAnalyzer {
 	 * 
 	 * Note: Unsure what to do if the last entry is not a program ending, or -1
 	 */
-	public static void analyzeINetLogger(String fileToAnalyze, boolean verbose, long startTime, long endTime) throws IOException{
+	public static String analyzeINetLogger(String fileToAnalyze, boolean verbose, long startTime, long endTime) throws IOException{
 
 
 		// Read in file:
@@ -146,8 +155,8 @@ public class iNetLogAnalyzer {
 
 		
 		if (entryList.isEmpty()){
-			System.out.println("No valid Internet log entries found."); //Nothing to analyze
-			return;
+//			System.out.println("No valid Internet log entries found."); //Nothing to analyze
+			return "No valid Internet log entries found.";
 		}
 		
 		startTime = Math.max(startTime, entryList.getFirst().getTimestamp());
@@ -171,7 +180,14 @@ public class iNetLogAnalyzer {
 		long prevTime = 0;
 		boolean logging = false;
 		for (InternetCSVEntry curEntry : entryList){
-			long curTimePast = curEntry.getTimestamp() - prevTime;
+			long curTimePast;
+			if (curEntry.getTimestamp() > endTime){
+				break;
+			} else if (curEntry.getTimestamp() < startTime){
+				curTimePast = 0;
+			} else{
+				curTimePast = Math.abs(curEntry.getTimestamp() - prevTime);
+			}
 			if (curEntry.isOpening()){
 				//starting
 				logging = true;
@@ -199,7 +215,11 @@ public class iNetLogAnalyzer {
 				logging = true;
 			}
 			prevEntry = curEntry;
-			prevTime = prevEntry.getTimestamp();
+			if (curEntry.getTimestamp() < startTime){
+				prevTime = startTime;
+			} else{
+				prevTime = prevEntry.getTimestamp();
+			}
 		}
 
 		if (verbose){
@@ -207,9 +227,9 @@ public class iNetLogAnalyzer {
 		}
 		//Print the result
 		
-		printAnalysis(startTime, endTime, logTime, localDisconnectedTime, intDisonnectedTime);
+		return getAnalysisText(startTime, endTime, logTime, localDisconnectedTime, intDisonnectedTime);
 	}
-	public static void printAnalysis(long startTime, long endTime, long logTime, long localDisconnectedTime, long intDisconnectedTime){
+	public static String getAnalysisText(long startTime, long endTime, long logTime, long localDisconnectedTime, long intDisconnectedTime){
 		/*
 		 * Internet statistics from DATE1 to DATE2:
 		 * 
@@ -229,12 +249,11 @@ public class iNetLogAnalyzer {
 		long allTime = endTime - startTime;
 		
 		if (allTime <= 0){
-			System.out.println("Not enough entries to analyze");
-			return;
+			//System.out.println("Not enough entries to analyze");
+			return "Not enough entries to analyze";
 		}
 		
 		
-		String header = "Internet Statistics from " + CSVEntry.getCSVTimestamp(startTime) + " to " + CSVEntry.getCSVTimestamp(endTime) + ":";
 		
 		
 		
@@ -280,7 +299,13 @@ public class iNetLogAnalyzer {
 		double intPctLog = invPct(getPct(intDisconnectedTime,logTime));
 		double localPctLog = invPct(getPct(localDisconnectedTime,logTime));
 		
-		String logPctLine = String.format("Logged %.1f%% of time between %s and %s",logPctAll,CSVEntry.getCSVTimestamp(startTime),CSVEntry.getCSVTimestamp(endTime) );
+		//String header = "Internet Statistics from " + CSVEntry.getCSVTimestamp(startTime) + " to " + CSVEntry.getCSVTimestamp(endTime) + ":";
+		String header = String.format("Internet Statistics from %s to %s (%.1f %s):",
+				CSVEntry.getCSVTimestamp(startTime),CSVEntry.getCSVTimestamp(endTime),
+				(float)allTime/curMSDivider,timeUnit);
+		
+		String logPctLine = String.format("Logged %.1f%% of time between %s and %s",
+				logPctAll,CSVEntry.getCSVTimestamp(startTime),CSVEntry.getCSVTimestamp(endTime));
 		
 		String totalHeading = "Total Time: value(inverse)";
 		String loggedHeading = "Logged Time: value(inverse)";
@@ -317,26 +342,20 @@ public class iNetLogAnalyzer {
 		}
 		
 		
-		/*
-		 * Total Time:
-		 *        Logged:           Local Connected:        Internet Connected:
-		 * Days	  012.6(000.0)      012.6(000.0)            012.3(000.3)
-		 * Pct	  100.0%(000.0%)	100.0%(000.0%)			097.6%(002.4%)
-		 * 
-		 * Logged Time:
-		 * 		Logged:		Local Connected:	Internet Connected:
-		 * Days	12.6		0					0.3
-		 * Pct	100%		0%					2.4%
-		 */
+//		System.out.println(header);
+//		System.out.println();
+//		System.out.println(logPctLine);
+//		System.out.println();
+//		System.out.println(totalTable);
+//		System.out.println();
+//		System.out.println(loggedTable);
+		
+		return header + System.lineSeparator() + System.lineSeparator() +
+				logPctLine + System.lineSeparator() +
+				totalTable + System.lineSeparator() +
+				loggedTable;
 		
 		
-		System.out.println(header);
-		System.out.println();
-		System.out.println(logPctLine);
-		System.out.println();
-		System.out.println(totalTable);
-		System.out.println();
-		System.out.println(loggedTable);
 	}
 
 	private static double getPct(long trueTime, long allTime){
