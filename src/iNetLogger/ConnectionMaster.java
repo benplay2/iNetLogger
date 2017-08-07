@@ -27,13 +27,13 @@ public class ConnectionMaster {
 	public ConnectionMaster(){
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
-		this.setNotifMngr(new SysNotificationManager());
+		this.setNotifMngr(new SysNotificationManager(this));
 	}
 
 	public ConnectionMaster(String localInterfaceAddress){
 		setInterfaceCheck(new NetworkInterfaceCheck(localInterfaceAddress));
 		setLogger(new LogMaster());
-		this.setNotifMngr(new SysNotificationManager());
+		this.setNotifMngr(new SysNotificationManager(this));
 	}
 	/*
 	 * Main Method.
@@ -102,6 +102,8 @@ public class ConnectionMaster {
 			if (master.isVerbose()){
 				System.out.println("Local address set to: " + localAddress);
 			}
+		} else{
+			System.out.println("Local address not provided. It is recommended to provide local router IP.");
 		}
 		if (cmd.hasOption("iNetAddress")){
 			String iNetAddress = cmd.getOptionValue("iNetAddress");
@@ -358,6 +360,17 @@ public class ConnectionMaster {
 		System.out.println("Exiting.");
 		this.setKeepRunning(false);
 		this.notifyStopMonitoring();
+	}
+	
+	public void addWinStartup(){
+		//TODO: add to startup folder
+	}
+	public void removeWinStartup(){
+		//TODO: remove shortcut from startup folder
+	}
+	public boolean isInStartup(){
+		//TODO: check if the shortcut is in startup folder
+		return false;
 	}
 
 	private boolean isKeepRunning() {

@@ -12,13 +12,17 @@ public class SysNotificationManager {
 
 	private TrayIcon trayIcon;
 	private boolean traySuppported;
+	private ConnectionMaster connMaster;
+	private static Image curIcon;
 
-	public SysNotificationManager(){
+	public SysNotificationManager(ConnectionMaster connMaster){
+		this.setConnMaster(connMaster);
 		this.setTraySuppported(SystemTray.isSupported());
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()){
 			SystemTray tray = SystemTray.getSystemTray();
 			Image image = Toolkit.getDefaultToolkit().createImage("icon_v6.png");
+			SysNotificationManager.setCurIcon(image);
 			trayIcon = new TrayIcon(image,"iNetLogger");
 			trayIcon.setImageAutoSize(true);
 			
@@ -31,17 +35,32 @@ public class SysNotificationManager {
 		}
 		if (this.isTraySuppported()){
 			this.setTrayIcon(trayIcon);
-			this.AddMenu();
+			this.addOnClick();
+			this.addMenu();
 		}
 	}
 
+	/*
+	 * Main method for testing some functionality
+	 */
 	public static void main(String[] args) throws AWTException, java.net.MalformedURLException {
-		SysNotificationManager td = new SysNotificationManager();
+		SysNotificationManager td = new SysNotificationManager(new ConnectionMaster());
 		td.displayInternetConnected();
 
 	}
-	private void AddMenu(){
+	private void addOnClick(){
+		final SysNotificationManager sysManager = this;
+		this.getTrayIcon().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				sysManager.startAnalysisGUI();
+			}
+		});
+	}
+	
+	private void addMenu(){
 
+		final SysNotificationManager sysManager = this;
+		
 		PopupMenu menu = new PopupMenu();
 
 		MenuItem closeItem = new MenuItem("Close");
@@ -54,39 +73,42 @@ public class SysNotificationManager {
 		MenuItem aboutItem = new MenuItem("About");
 		aboutItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO: write.
+				sysManager.startAboutGUI();
 			}
 		});
 		MenuItem analyzeItem = new MenuItem("Analyze");
 		analyzeItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO: write.
+				sysManager.startAnalysisGUI();
+			}
+		});
+		
+		final CheckboxMenuItem runOnStartup = new CheckboxMenuItem("Run at Startup",sysManager.getConnMaster().isInStartup());
+		runOnStartup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (runOnStartup.getState()){
+					sysManager.getConnMaster().addWinStartup();
+				} else{
+					sysManager.getConnMaster().removeWinStartup();
+				}
 			}
 		});
 		
 		menu.add(analyzeItem);
+		menu.add(runOnStartup);
 		menu.add(aboutItem);
 		menu.add(closeItem);
 		
 		
 		this.getTrayIcon().setPopupMenu(menu);
 	}
-    public void displayTrayDemo() throws AWTException, java.net.MalformedURLException {
-        //Obtain only one instance of the SystemTray object
-        SystemTray tray = SystemTray.getSystemTray();
 
-        //If the icon is a file
-        Image image = Toolkit.getDefaultToolkit().createImage("icon.png");
-        //Alternative (if the icon is on the classpath):
-        //Image image = Toolkit.getToolkit().createImage(getClass().getResource("icon.png"));
-        TrayIcon trayIcon = new TrayIcon(image, "Tray Demo Tooltip");
-        //Let the system resizes the image if needed
-        trayIcon.setImageAutoSize(true);
-        //Set tooltip text for the tray icon
-        //trayIcon.setToolTip("System tray icon demo");
-        tray.add(trayIcon);
-        trayIcon.displayMessage("Hello, World", "notification demo", MessageType.INFO);
-    }
+	public void startAnalysisGUI(){
+		new AnalysisGUIControl(this.getConnMaster().getLogger().getConnectionLogFullPath()).startGUI();
+	}
+	public void startAboutGUI(){
+		AboutGUIControl.startGUI();
+	}
     
     public void displayStartLogging(){
     	this.displayTray("Starting Logging","iNetLogger has started connection logging.");
@@ -142,6 +164,22 @@ public class SysNotificationManager {
 
 	private void setTraySuppported(boolean traySuppported) {
 		this.traySuppported = traySuppported;
+	}
+
+	public ConnectionMaster getConnMaster() {
+		return connMaster;
+	}
+
+	private void setConnMaster(ConnectionMaster connMaster) {
+		this.connMaster = connMaster;
+	}
+
+	public static Image getCurIcon() {
+		return SysNotificationManager.curIcon;
+	}
+
+	public static void setCurIcon(Image curIcon) {
+		SysNotificationManager.curIcon = curIcon;
 	}
 	
 }
