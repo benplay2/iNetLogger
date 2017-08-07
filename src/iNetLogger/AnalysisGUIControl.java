@@ -1,16 +1,17 @@
 package iNetLogger;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
@@ -20,14 +21,14 @@ import javax.swing.SwingConstants;
 
 public class AnalysisGUIControl implements ActionListener{
 
-	private String logFilename;
-	private long startTime;
-	private long endTime;
-	private JFrame mainFrame;
-	private JTextArea analysisResultsArea; //Store results
-	private JTextField startTimeField;
-	private JTextField endTimeField;
-	private JTextField filenameField;
+	private static String logFilename;
+	private static long startTime;
+	private static long endTime;
+	private static JFrame mainFrame;
+	private static JTextArea analysisResultsArea; //Store results
+	private static JTextField startTimeField;
+	private static JTextField endTimeField;
+	private static JTextField filenameField;
 	
 	public AnalysisGUIControl(String logFilename){
 		this.setStartTime(0);
@@ -37,7 +38,7 @@ public class AnalysisGUIControl implements ActionListener{
 	public AnalysisGUIControl(){
 		this.setStartTime(0);
 		this.setEndTime(System.currentTimeMillis());
-		this.setLogFilename("");//TODO: need to have some way to ask user for location...
+		this.setLogFilename("");
 	}
 	
 	public void createAndShowGUI(){
@@ -94,6 +95,8 @@ public class AnalysisGUIControl implements ActionListener{
 	    c.gridx = 0;       //column
 	    c.gridwidth = 2;   //column width
 	    c.gridy = 1;       //row
+	    textField.setActionCommand("manualFilePath");
+	    textField.addActionListener(new AnalysisGUIControl());
 	    pane.add(textField, c);
 		
 	    button = new JButton("Browse");
@@ -146,6 +149,8 @@ public class AnalysisGUIControl implements ActionListener{
 	    c.gridx = 0;       //column
 	    c.gridwidth = 1;   //column width
 	    c.gridy = 3;       //row
+	    textField.setActionCommand("changeStart");
+	    textField.addActionListener(new AnalysisGUIControl());
 	    pane.add(textField, c);
 	    
 	    textField = new JTextField(CSVEntry.getCSVTimestamp(this.getEndTime()));
@@ -160,6 +165,8 @@ public class AnalysisGUIControl implements ActionListener{
 	    c.gridx = 1;       //column
 	    c.gridwidth = 1;   //column width
 	    c.gridy = 3;       //row
+	    textField.setActionCommand("changeEnd");
+	    textField.addActionListener(new AnalysisGUIControl());
 	    pane.add(textField, c);
 	    
 		button = new JButton("Analyze");
@@ -229,11 +236,52 @@ public class AnalysisGUIControl implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if ("analyze".equals(e.getActionCommand())) {
-			//TODO: We have some analysis to do!
-//			iNetLogAnalyzer.analyzeINetLogger("", verbose, startTime, endTime)
+			String result = null;
+			try {
+				result = iNetLogAnalyzer.analyzeINetLogger(this.getLogFilename(), false, this.getStartTime(), this.getEndTime());
+			} catch (IOException e1) {
+				//e1.printStackTrace();
+				result = e1.toString();
+			}
+			this.getAnalysisResultsArea().setText(result);
         } else if ("browse".equals(e.getActionCommand())){
-        	//TODO: browse for our desired file.
+        	//Create a file chooser
+            JFileChooser fc = new JFileChooser();
+            
+            int returnVal = fc.showOpenDialog(this.getMainFrame());
+            
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                //This is where a real application would open the file.
+                this.setLogFilename(file.getAbsoluteFile().toString());
+                this.getFilenameField().setText(file.getAbsolutePath().toString());
+            }
+        } else if ("manualFilePath".equals(e.getActionCommand())){
+        	this.setLogFilename(this.getFilenameField().getText());
+            
+        }else if ("changeStart".equals(e.getActionCommand())){
+        	try {
+				this.setStartTime(CSVEntry.getTimeFromString(this.getStartTimeField().getText()));
+				this.getStartTimeField().setText(CSVEntry.getCSVTimestamp(this.getStartTime()));
+			} catch (ParseException e1) {
+				//e1.printStackTrace();
+				this.getAnalysisResultsArea().setText(e1.toString());
+			}
+        } else if ("changeEnd".equals(e.getActionCommand())){
+        	try {
+				this.setEndTime(CSVEntry.getTimeFromString(this.getEndTimeField().getText()));
+				this.getEndTimeField().setText(CSVEntry.getCSVTimestamp(this.getEndTime()));
+			} catch (ParseException e1) {
+				//e1.printStackTrace();
+				this.getAnalysisResultsArea().setText(e1.toString());
+			}
         }
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+            	getMainFrame().repaint();
+            }
+        });
+		
 	}
 
 	public long getStartTime() {
@@ -241,7 +289,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setStartTime(long startTime) {
-		this.startTime = startTime;
+		AnalysisGUIControl.startTime = startTime;
 	}
 
 	public long getEndTime() {
@@ -249,7 +297,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setEndTime(long endTime) {
-		this.endTime = endTime;
+		AnalysisGUIControl.endTime = endTime;
 	}
 
 	public JTextArea getAnalysisResultsArea() {
@@ -257,7 +305,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setAnalysisResultsArea(JTextArea analysisResultsArea) {
-		this.analysisResultsArea = analysisResultsArea;
+		AnalysisGUIControl.analysisResultsArea = analysisResultsArea;
 	}
 
 	public JTextField getStartTimeField() {
@@ -265,7 +313,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setStartTimeField(JTextField startTimeField) {
-		this.startTimeField = startTimeField;
+		AnalysisGUIControl.startTimeField = startTimeField;
 	}
 
 	public JTextField getEndTimeField() {
@@ -273,7 +321,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setEndTimeField(JTextField endTimeField) {
-		this.endTimeField = endTimeField;
+		AnalysisGUIControl.endTimeField = endTimeField;
 	}
 
 	public JFrame getMainFrame() {
@@ -281,7 +329,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setMainFrame(JFrame mainFrame) {
-		this.mainFrame = mainFrame;
+		AnalysisGUIControl.mainFrame = mainFrame;
 	}
 
 	public String getLogFilename() {
@@ -289,13 +337,13 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 
 	public void setLogFilename(String logFilename) {
-		this.logFilename = logFilename;
+		AnalysisGUIControl.logFilename = logFilename;
 	}
 	public JTextField getFilenameField() {
 		return filenameField;
 	}
 	public void setFilenameField(JTextField filenameField) {
-		this.filenameField = filenameField;
+		AnalysisGUIControl.filenameField = filenameField;
 	}
 
 }
