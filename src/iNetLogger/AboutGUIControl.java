@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -44,7 +45,7 @@ public class AboutGUIControl implements ActionListener{
 
 		JTextArea text = new JTextArea("iNetLogger is an Internet logging application released under GNU GPL by Ben Brust. "+
 		System.lineSeparator() + System.lineSeparator() +
-		"iNetLogger is free to use, but if it is helpful to you I would not object to a small donation!"+
+		"iNetLogger is free to use, but if it is useful for you, I would not object to a small donation!"+
 		System.lineSeparator() +
 		"Maybe... $1/computer?");
 		text.setPreferredSize(new Dimension(400,150));
@@ -52,8 +53,8 @@ public class AboutGUIControl implements ActionListener{
 		text.setLineWrap(true);
 		text.setWrapStyleWord(true);
 		text.setAlignmentX(Component.CENTER_ALIGNMENT);
-		text.setBackground(new Color(178, 255, 102));
-		text.setFont(text.getFont().deriveFont((float) 16));
+		text.setBackground(new Color(224, 224, 224));
+		text.setFont(new Font("Sans Sarif",Font.PLAIN,16));
 		pane.add(text,BorderLayout.CENTER);
 		
 		JButton button = new JButton("Donate Here! :)");
@@ -66,7 +67,8 @@ public class AboutGUIControl implements ActionListener{
 	public static void main(String[] args){
 		//Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
-        startGUI();
+		SysNotificationManager.setUILookAndFeel();
+		startGUI();
 	}
 	public static void startGUI(){
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -84,5 +86,6 @@ public class AboutGUIControl implements ActionListener{
 			BrowserUtils.openWebpage(url);
         }
 	}
+	
 	
 }

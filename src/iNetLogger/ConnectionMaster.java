@@ -13,7 +13,7 @@ import org.apache.commons.cli.*;
 public class ConnectionMaster {
 
 
-	private long sampleRate = 5 * 1000; // Sample rate in ms
+	private long sampleRate = 30 * 1000; // Sample rate in ms
 	private NetworkInterfaceCheck interfaceCheck;
 	private LinkedList<NetworkConnection> connectionList = new LinkedList<NetworkConnection>(); //holds all connections to check
 	private LogMaster logger;
@@ -28,19 +28,21 @@ public class ConnectionMaster {
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
 		this.setNotifMngr(new SysNotificationManager(this));
+		SysNotificationManager.setUILookAndFeel();
 	}
 
 	public ConnectionMaster(String localInterfaceAddress){
 		setInterfaceCheck(new NetworkInterfaceCheck(localInterfaceAddress));
 		setLogger(new LogMaster());
 		this.setNotifMngr(new SysNotificationManager(this));
+		SysNotificationManager.setUILookAndFeel();
 	}
 	/*
 	 * Main Method.
 	 */
 	public static void main(String[] args){
 
-		args = new String[] {"-l192.168.1.1","-iwww.google.com,www.yahoo.com"};
+		//args = new String[] {"-l192.168.1.1","-iwww.google.com,www.yahoo.com"};
 
 		System.out.println("Starting iNetLogger...");
 		ConnectionMaster master = new ConnectionMaster();
@@ -370,6 +372,9 @@ public class ConnectionMaster {
 	}
 	public boolean isInStartup(){
 		//TODO: check if the shortcut is in startup folder
+		return false;
+	}
+	public static boolean canAddToStartup(){
 		return false;
 	}
 

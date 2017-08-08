@@ -23,7 +23,7 @@ public class iNetLogAnalyzer {
 
 	public static void main(String[] args){
 
-		args = new 	String[] {"-d08/06/2017-8/6/2017","iNetLog.csv"};
+		//args = new 	String[] {"-d08/06/2017-8/6/2017","iNetLog.csv"};
 
 		/*
 		 * First, take in some inputs
@@ -134,17 +134,32 @@ public class iNetLogAnalyzer {
 
 
 		//Create list of entries
-		String curLine = null;
 		LinkedList<InternetCSVEntry> entryList = new LinkedList<InternetCSVEntry>();
+		{
+			String curLine = null;
+			InternetCSVEntry curEntry = null;
+			InternetCSVEntry lastEntry = null;
 
-		while ((curLine = br.readLine()) != null){
-			try{
-				entryList.add(new InternetCSVEntry(curLine));
-			}catch ( IncompatibleLineException e){
-				//Do nothing
+			while ((curLine = br.readLine()) != null){
+				try{
+					curEntry = new InternetCSVEntry(curLine);
+
+					if (curEntry.getTimestamp() > startTime){
+						if (entryList.isEmpty() && lastEntry != null){
+							entryList.add(lastEntry);
+						}
+						entryList.add(curEntry);
+					}
+
+					if (curEntry.getTimestamp() > endTime){
+						break;
+					}
+					lastEntry = curEntry;
+				}catch ( IncompatibleLineException e){
+					//Do nothing
+				}
 			}
 		}
-
 
 		try {
 			br.close();
@@ -175,53 +190,54 @@ public class iNetLogAnalyzer {
 		long logTime = 0;
 		long intDisonnectedTime = 0; //Save disconnected time. Errs on side of internet is connected
 		long localDisconnectedTime = 0;
-
-		InternetCSVEntry prevEntry = null;
-		long prevTime = 0;
-		boolean logging = false;
-		for (InternetCSVEntry curEntry : entryList){
-			long curTimePast;
-			if (curEntry.getTimestamp() > endTime){
-				break;
-			} else if (curEntry.getTimestamp() < startTime){
-				curTimePast = 0;
-			} else{
-				curTimePast = Math.abs(curEntry.getTimestamp() - prevTime);
-			}
-			if (curEntry.isOpening()){
-				//starting
-				logging = true;
-			} else if (curEntry.isClosing()){
-				//Stopping
-				logging = false;
-				
-				if (!prevEntry.isLocalConnected()){
-					localDisconnectedTime += curTimePast;
+		{
+			InternetCSVEntry prevEntry = null;
+			long prevTime = 0;
+			boolean logging = false;
+			for (InternetCSVEntry curEntry : entryList){
+				long curTimePast;
+				if (curEntry.getTimestamp() > endTime){
+					break;
+				} else if (curEntry.getTimestamp() < startTime){
+					curTimePast = 0;
+				} else{
+					curTimePast = Math.abs(curEntry.getTimestamp() - prevTime);
 				}
-				if (!prevEntry.isInternetConnected()){
-					intDisonnectedTime += curTimePast;
+				if (curEntry.isOpening()){
+					//starting
+					logging = true;
+				} else if (curEntry.isClosing()){
+					//Stopping
+					logging = false;
+					if (logging){
+						if (!prevEntry.isLocalConnected()){
+							localDisconnectedTime += curTimePast;
+						}else if (!prevEntry.isInternetConnected()){
+							//else if because we don't really know if Internet is connected or not.
+							intDisonnectedTime += curTimePast;
+						}
+						logTime += curTimePast;
+					}
+				} else if(logging){
+					if (!prevEntry.isLocalConnected()){
+						localDisconnectedTime += curTimePast;
+					} else if (!prevEntry.isInternetConnected()){
+						//else if because we don't really know if Internet is connected or not.
+						intDisonnectedTime += curTimePast;
+					}
+					logTime += curTimePast;
+				} else{
+					//Not logging, but status is 0, normal. Treat like program status 1, starting
+					logging = true;
 				}
-				logTime += curTimePast;
-			} else if(logging){
-				if (!prevEntry.isLocalConnected()){
-					localDisconnectedTime += curTimePast;
+				prevEntry = curEntry;
+				if (curEntry.getTimestamp() < startTime){
+					prevTime = startTime;
+				} else{
+					prevTime = prevEntry.getTimestamp();
 				}
-				if (!prevEntry.isInternetConnected()){
-					intDisonnectedTime += curTimePast;
-				}
-				logTime += curTimePast;
-			} else{
-				//Not logging, but status is 0, normal. Treat like program status 1, starting
-				logging = true;
-			}
-			prevEntry = curEntry;
-			if (curEntry.getTimestamp() < startTime){
-				prevTime = startTime;
-			} else{
-				prevTime = prevEntry.getTimestamp();
 			}
 		}
-
 		if (verbose){
 			System.out.println("Creating analysis from " + entryList.size() + "Internet connection entries.");
 		}
@@ -332,7 +348,7 @@ public class iNetLogAnalyzer {
 			String headerLine = "       Logged:           Local Connected:        Internet Connected:";
 			String logPctTableLine = String.format("%-7s%5.1f%%(%5.1f)     %5.1f%%(%5.1f)           %5.1f%%(%5.1f)", 
 					"Pct",
-					1.0, 0.0,
+					100.0, 0.0,
 					localPctLog, invPct(localPctLog),
 					intPctLog, invPct(intPctLog));
 			
@@ -352,10 +368,31 @@ public class iNetLogAnalyzer {
 		
 		return header + System.lineSeparator() + System.lineSeparator() +
 				logPctLine + System.lineSeparator() +
-				totalTable + System.lineSeparator() +
+				totalTable + System.lineSeparator() + System.lineSeparator() +
 				loggedTable;
 		
 		
+	}
+	
+	public static long getTimestampOfFirstEntry(String filename) throws IOException{
+		// Read in file:
+		BufferedReader br = null;
+
+		br = FileUtils.getFileReader(filename);
+		long firstTime = 0;
+
+		//Create list of entries
+		String curLine = null;
+
+		while ((curLine = br.readLine()) != null){
+			try{
+				firstTime = new InternetCSVEntry(curLine).getTimestamp();
+				break;
+			}catch ( IncompatibleLineException e){
+				//Do nothing
+			}
+		}
+		return firstTime;
 	}
 
 	private static double getPct(long trueTime, long allTime){
