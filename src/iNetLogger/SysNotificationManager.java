@@ -70,7 +70,7 @@ public class SysNotificationManager {
 		MenuItem closeItem = new MenuItem("Close");
 		closeItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
+				PromptCloseGUIControl.startGUI();
 			}
 		});
 
