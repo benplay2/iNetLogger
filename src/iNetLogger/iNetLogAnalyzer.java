@@ -286,10 +286,10 @@ public class iNetLogAnalyzer {
 		String loggedTable = null;
 		
 		
-		long hourThreshold = 1000 * 60 * 60 * 3; //ms after which communicate in hours
-		long dayThreshold = 1000 * 60 * 60 * 24 * 3; //ms after which communicate in days
-		long monthThreshold = 1000 * 60 * 60 * 24 * 30 * 3; //ms after which communicate in months
-		long yearThreshold = 1000 * 60 * 60 * 24 * 365 * 2; //ms after which communicate in years
+		long hourThreshold =  1000L * 60L * 60L * 3L; //ms after which communicate in hours
+		long dayThreshold =   1000L * 60L * 60L * 24L * 3L; //ms after which communicate in days
+		long monthThreshold = 1000L * 60L * 60L * 24L * 30L * 3L; //ms after which communicate in months
+		long yearThreshold =  1000L * 60L * 60L * 24L * 365L * 2L; //ms after which communicate in years
 		
 
 		long curMSDivider;
