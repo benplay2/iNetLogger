@@ -303,9 +303,20 @@ public class ConnectionMaster {
 				this.getNotifMngr().displayConnectionNotConnected(connectionAddress);
 				System.out.println("The Connection'"+ connectionAddress +"' Is Disconnected!");
 			}
-
 		}
 	}
+
+	/*
+	 * Use to log the previous network/Internet connection status.
+	 */
+	public void logPastInternetConnectionStatus(){
+		if (this.wasLastNetworkConnected()){
+			this.getLogger().logInterfaceConnected(this.wasLastInternetConnected());
+		} else{
+			this.getLogger().logInterfaceNotConnected();
+		}
+	}
+
 	public void notifyStartMonitoring(boolean localConnected, boolean internetConnected){
 		this.getLogger().logStartLogging(localConnected, internetConnected);
 		this.getNotifMngr().displayStartLogging();

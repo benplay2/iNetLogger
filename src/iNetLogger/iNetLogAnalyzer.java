@@ -237,6 +237,15 @@ public class iNetLogAnalyzer {
 					prevTime = prevEntry.getTimestamp();
 				}
 			}
+			InternetCSVEntry curEntry = entryList.getLast();
+			if (curEntry.getTimestamp() < endTime && !curEntry.isClosing()){
+				//Assume that nothing has changed from then until now
+				if (!curEntry.isLocalConnected()){
+					localDisconnectedTime += endTime - prevTime;
+				} else if (!curEntry.isInternetConnected()){
+					intDisonnectedTime += endTime - prevTime;
+				}
+			}
 		}
 		if (verbose){
 			System.out.println("Creating analysis from " + entryList.size() + "Internet connection entries.");

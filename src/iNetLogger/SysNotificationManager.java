@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -24,7 +25,7 @@ public class SysNotificationManager {
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()){
 			SystemTray tray = SystemTray.getSystemTray();
-			Image image = Toolkit.getDefaultToolkit().createImage("icon_v6.png");
+			Image image = Toolkit.getDefaultToolkit().createImage("dependentFiles" + File.separator + "icon_v6.png");
 			SysNotificationManager.setCurIcon(image);
 			trayIcon = new TrayIcon(image,"iNetLogger");
 			trayIcon.setImageAutoSize(true);
@@ -82,6 +83,7 @@ public class SysNotificationManager {
 		MenuItem analyzeItem = new MenuItem("Analyze");
 		analyzeItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				sysManager.getConnMaster().logPastInternetConnectionStatus();
 				sysManager.startAnalysisGUI();
 			}
 		});
