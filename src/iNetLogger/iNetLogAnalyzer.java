@@ -245,6 +245,7 @@ public class iNetLogAnalyzer {
 				} else if (!curEntry.isInternetConnected()){
 					intDisonnectedTime += endTime - prevTime;
 				}
+				logTime += endTime - prevTime;
 			}
 		}
 		if (verbose){
