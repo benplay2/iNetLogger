@@ -25,6 +25,10 @@ public class ConnectionMaster {
 	private boolean lastInternetConnected = false;
 
 	public ConnectionMaster(){
+		if(!FileUtils.lockInstance("NetLoggerRunning")){
+			System.out.println("Already have 1 instance running, exiting.");
+			System.exit(4);
+		};
 		setInterfaceCheck(new NetworkInterfaceCheck());
 		setLogger(new LogMaster());
 		this.setNotifMngr(new SysNotificationManager(this));
@@ -32,6 +36,10 @@ public class ConnectionMaster {
 	}
 
 	public ConnectionMaster(String localInterfaceAddress){
+		if(!FileUtils.lockInstance("NetLoggerRunning")){
+			System.out.println("Already have 1 instance running, exiting.");
+			System.exit(4);
+		};
 		setInterfaceCheck(new NetworkInterfaceCheck(localInterfaceAddress));
 		setLogger(new LogMaster());
 		this.setNotifMngr(new SysNotificationManager(this));

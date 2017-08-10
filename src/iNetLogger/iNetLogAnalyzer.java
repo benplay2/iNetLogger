@@ -297,25 +297,25 @@ public class iNetLogAnalyzer {
 		String timeUnit;
 		/* Populate the tables */
 		if (allTime < hourThreshold){
-			//Hours
+			//Minutes
 			timeUnit = "Mins";
-			curMSDivider = 1000 * 60; //1 minute
+			curMSDivider = 1000L * 60L; //1 minute
 		} else if (allTime < dayThreshold){
 			//Hours
 			timeUnit = "Hours";
-			curMSDivider = 1000 * 60 * 60; //1 hour
+			curMSDivider = 1000L * 60L * 60L; //1 hour
 		} else if (allTime < monthThreshold){
 			//Days
 			timeUnit = "Days";
-			curMSDivider = 1000 * 60 * 60 * 24; //1 day
+			curMSDivider = 1000L * 60L * 60L * 24L; //1 day
 		} else if (allTime < yearThreshold) {
 			//Months
 			timeUnit = "Months";
-			curMSDivider = (long) (1000 * 60 * 60 * 24 * 30.4375f); //1 month
+			curMSDivider = (1000L * 60L * 60L) * (long)(24L * 30.4375); //1 month
 		} else{
 			//Years
 			timeUnit = "Years";
-			curMSDivider = (long) (1000 * 60 * 60 * 24 * 365.25); //1 year
+			curMSDivider = (1000L * 60L * 60L) * (long)(24L * 365.25); //1 year
 		}
 		
 		double logPctAll = getPct(logTime,allTime);
@@ -337,13 +337,13 @@ public class iNetLogAnalyzer {
 		String loggedHeading = "Logged Time: value(inverse)";
 		
 		{
-			String headerLine = "       Logged:           Local Connected:        Internet Connected:";
-			String totalTimeTableLine = String.format("%-7s%5.1f(%5.1f)      %5.1f(%5.1f)            %5.1f(%5.1f)", 
+			String headerLine = "       Logged:             Local Connected:          Internet Connected:";
+			String totalTimeTableLine = String.format("%-7s%6.2f(%6.2f)      %6.2f(%6.2f)            %6.2f(%6.2f)", 
 					timeUnit,
 					(float)logTime / curMSDivider, (float)(allTime - logTime)/curMSDivider,
 					(float)(allTime-localDisconnectedTime)/curMSDivider, (float)(localDisconnectedTime)/curMSDivider,
 					(float)(allTime-intDisconnectedTime)/curMSDivider, (float)(intDisconnectedTime)/curMSDivider);
-			String totalPctTableLine = String.format("%-7s%5.1f%%(%5.1f)     %5.1f%%(%5.1f)           %5.1f%%(%5.1f)", 
+			String totalPctTableLine = String.format("%-7s%6.2f%%(%6.2f)     %6.2f%%(%6.2f)           %6.2f%%(%6.2f)", 
 					"Pct",
 					logPctAll, invPct(logPctAll),
 					localPctAll, invPct(localPctAll),
@@ -355,8 +355,8 @@ public class iNetLogAnalyzer {
 					totalPctTableLine;
 		}
 		{
-			String headerLine = "       Logged:           Local Connected:        Internet Connected:";
-			String logPctTableLine = String.format("%-7s%5.1f%%(%5.1f)     %5.1f%%(%5.1f)           %5.1f%%(%5.1f)", 
+			String headerLine = "       Logged:             Local Connected:          Internet Connected:";
+			String logPctTableLine = String.format("%-7s%6.2f%%(%6.2f)     %6.2f%%(%6.2f)           %6.2f%%(%6.2f)", 
 					"Pct",
 					100.0, 0.0,
 					localPctLog, invPct(localPctLog),
@@ -368,6 +368,59 @@ public class iNetLogAnalyzer {
 		}
 		
 		
+		String logTimeUnit;
+		long logTimeMSDivider;
+		String intTimeUnit;
+		long intTimeMSDivider;
+		
+		if (logTime < hourThreshold){
+			//Minutes
+			logTimeUnit = "minutes";
+			logTimeMSDivider = 1000L * 60L; //1 minute
+		} else if (logTime < dayThreshold){
+			//Hours
+			logTimeUnit = "hours";
+			logTimeMSDivider = 1000L * 60L * 60L; //1 hour
+		} else if (logTime < monthThreshold){
+			//Days
+			logTimeUnit = "days";
+			logTimeMSDivider = 1000L * 60L * 60L * 24L; //1 day
+		} else if (logTime < yearThreshold) {
+			//Months
+			logTimeUnit = "months";
+			logTimeMSDivider =  (1000L * 60L * 60L) * (long)(24L * 30.4375); //1 month
+		} else{
+			//Years
+			logTimeUnit = "years";
+			logTimeMSDivider =  (1000L * 60L * 60L) * (long)(24L * 365.25); //1 year
+		}
+		
+		if (intDisconnectedTime < hourThreshold){
+			//Minutes
+			intTimeUnit = "minutes";
+			intTimeMSDivider = 1000L * 60L; //1 minute
+		} else if (intDisconnectedTime < dayThreshold){
+			//Hours
+			intTimeUnit = "hours";
+			intTimeMSDivider = 1000L * 60L * 60L; //1 hour
+		} else if (intDisconnectedTime < monthThreshold){
+			//Days
+			intTimeUnit = "days";
+			intTimeMSDivider = 1000L * 60L * 60L * 24L; //1 day
+		} else if (intDisconnectedTime < yearThreshold) {
+			//Months
+			intTimeUnit = "months";
+			intTimeMSDivider =  (1000L * 60L * 60L) * (long)(24L * 30.4375); //1 month
+		} else{
+			//Years
+			intTimeUnit = "years";
+			intTimeMSDivider =  (1000L * 60L * 60L) * (long)(24L * 365.25); //1 year
+		}
+		
+		String quickIntString = String.format("Internet disconnected %.2f %s of %.2f %s logged.",
+				(float)intDisconnectedTime/intTimeMSDivider, intTimeUnit,
+				(float)logTime/logTimeMSDivider, logTimeUnit);
+		
 //		System.out.println(header);
 //		System.out.println();
 //		System.out.println(logPctLine);
@@ -378,6 +431,7 @@ public class iNetLogAnalyzer {
 		
 		return header + System.lineSeparator() + System.lineSeparator() +
 				logPctLine + System.lineSeparator() +
+				quickIntString + System.lineSeparator() + System.lineSeparator() +
 				totalTable + System.lineSeparator() + System.lineSeparator() +
 				loggedTable;
 		

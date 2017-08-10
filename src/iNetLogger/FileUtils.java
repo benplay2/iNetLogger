@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
 import java.util.Collection;
 /*
  * 
@@ -14,7 +16,7 @@ import java.util.Collection;
  */
 public class FileUtils {
 
-	
+	//private static Logger logger = Logger.getLogger(FileUtils.class);
 	/*
 	 * Get a BufferedReader for a given filename.
 	 */
@@ -111,4 +113,41 @@ public class FileUtils {
 	public static String fullfile(String pathName, String fileName){
 		return new File(pathName, fileName).toString();
 	}
+	
+	public static boolean lockInstance(final String lockFile) {
+	    try {
+	        final File file = new File(lockFile);
+	        final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+	        final FileLock fileLock = randomAccessFile.getChannel().tryLock();
+	        if (fileLock != null) {
+	            Runtime.getRuntime().addShutdownHook(new Thread() {
+	                public void run() {
+	                    try {
+	                        fileLock.release();
+	                        randomAccessFile.close();
+	                        file.delete();
+	                    } catch (Exception e) {
+	                    	e.printStackTrace();
+	                        //logger.error("Unable to remove lock file: " + lockFile, e);
+	                    }
+	                }
+	            });
+	            return true;
+	        }
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	        //logger.error("Unable to create and/or lock file: " + lockFile, e);
+	    }
+	    return false;
+	}
 }
+
+
+
+
+
+
+
+
+
+
