@@ -1,4 +1,4 @@
-package iNetLogger;
+package simpleInternetLog;
 
 import java.awt.Desktop;
 import java.net.MalformedURLException;

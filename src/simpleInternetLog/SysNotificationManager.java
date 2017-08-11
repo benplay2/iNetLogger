@@ -1,4 +1,4 @@
-package iNetLogger;
+package simpleInternetLog;
 
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;

@@ -1,4 +1,4 @@
-package iNetLogger;
+package simpleInternetLog;
 /*
  * 
  * Created by Ben Brust 2017

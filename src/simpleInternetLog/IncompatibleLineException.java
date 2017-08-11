@@ -1,4 +1,4 @@
-package iNetLogger;
+package simpleInternetLog;
 
 public class IncompatibleLineException extends Exception {
 

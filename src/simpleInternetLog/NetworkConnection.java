@@ -1,4 +1,4 @@
-package iNetLogger;
+package simpleInternetLog;
 
 import java.io.IOException;
 import java.net.InetAddress;
