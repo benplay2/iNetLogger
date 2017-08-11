@@ -19,6 +19,7 @@ public class PromptCloseGUIControl{
 		JFrame mainFrame = new JFrame("Really close iNetLogger?");
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//mainFrame.setSize(400, 300);
+		mainFrame.setLocationRelativeTo(null);
 		mainFrame.setIconImage(SysNotificationManager.getCurIcon());
 		
 		//mainFrame.getContentPane().setLayout(new BorderLayout()); //This is default.
