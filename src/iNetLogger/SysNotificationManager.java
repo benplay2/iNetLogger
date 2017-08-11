@@ -27,7 +27,7 @@ public class SysNotificationManager {
 			SystemTray tray = SystemTray.getSystemTray();
 			Image image = Toolkit.getDefaultToolkit().createImage("dependentFiles" + File.separator + "icon_v6.png");
 			SysNotificationManager.setCurIcon(image);
-			trayIcon = new TrayIcon(image,"iNetLogger");
+			trayIcon = new TrayIcon(image,"simpleInternetLog");
 			trayIcon.setImageAutoSize(true);
 
 			try {
@@ -152,7 +152,7 @@ public class SysNotificationManager {
 	}
 
 	public void displayStartLogging(){
-		this.displayTray("Starting Logging","iNetLogger has started connection logging.");
+		this.displayTray("Starting Logging","simpleInternetLog has started connection logging.");
 	}
 	public void displayInterfaceConnected(){
 		this.displayTray("Interface Connected!", "Now connected to local network");
@@ -173,10 +173,10 @@ public class SysNotificationManager {
 		this.displayTray("Connection Lost!", "Computer no longer connected to \"" + connectionAddress + "\"");
 	}
 	public void displayErrorWriting(String filename){
-		this.displayTray("Unable to write to file!", "iNetLogger is unable to write to \"" + filename + "\". Close any applications using this file or iNetLogger will quit.");
+		this.displayTray("Unable to write to file!", "simpleInternetLog is unable to write to \"" + filename + "\". Close any applications using this file or simpleInternetLog will quit.");
 	}
 	public void displayErrorWriting(){
-		this.displayTray("Unable to write to file!", "iNetLogger is unable to write to at least one of the log files. Close any applications using the files.");
+		this.displayTray("Unable to write to file!", "simpleInternetLog is unable to write to at least one of the log files. Close any applications using the files.");
 	}
 	private void displayTray(String caption, String text){
 		if (!this.isTraySuppported()){

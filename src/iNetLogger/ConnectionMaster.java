@@ -66,7 +66,7 @@ public class ConnectionMaster {
 
 		
 		
-		System.out.println("Starting iNetLogger...");
+		System.out.println("Starting simpleInternetLog...");
 		ConnectionMaster master = new ConnectionMaster();
 
 		master.getLogger().setAppDataPath(master.getAppDataFolder());
@@ -102,14 +102,14 @@ public class ConnectionMaster {
 			cmd = parser.parse(options, args);
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
-			formatter.printHelp("iNetLogger", helpHeader, options, "", true); 
+			formatter.printHelp("simpleInternetLog", helpHeader, options, "", true); 
 
 			System.exit(1);
 			return;
 		}
 
 		if (cmd.hasOption("help")){ 
-			formatter.printHelp("iNetLogger", helpHeader, options, "", true); 
+			formatter.printHelp("simpleInternetLog", helpHeader, options, "", true); 
 			System.exit(1); 
 			return;
 		}

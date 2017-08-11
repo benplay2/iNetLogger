@@ -18,7 +18,7 @@ public class AboutGUIControl implements ActionListener{
 
 
 	public static void createAndShowGUI(){
-		JFrame mainFrame = new JFrame("About iNetLogger");
+		JFrame mainFrame = new JFrame("About simpleInternetLog");
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//mainFrame.setSize(400, 300);
 		mainFrame.setIconImage(SysNotificationManager.getCurIcon());
@@ -43,9 +43,9 @@ public class AboutGUIControl implements ActionListener{
 //		pane.setComponentOrientation(
 //				java.awt.ComponentOrientation.RIGHT_TO_LEFT);
 
-		JTextArea text = new JTextArea("iNetLogger is an Internet logging application released under GNU GPL by Ben Brust. "+
+		JTextArea text = new JTextArea("simpleInternetLog is an Internet logging application released under GNU GPL by Ben Brust. "+
 		System.lineSeparator() + System.lineSeparator() +
-		"iNetLogger is free to use, but if it is useful for you, I would not object to a small donation!"+
+		"simpleInternetLog is free to use, but if it is useful for you, I would not object to a small donation!"+
 		System.lineSeparator() +
 		"Maybe... $1/computer?");
 		text.setPreferredSize(new Dimension(400,150));
