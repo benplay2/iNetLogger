@@ -90,7 +90,16 @@ public class SysNotificationManager {
 
 		menu.add(analyzeItem);
 
-		if (ConnectionMaster.canAddToStartup()){
+		MenuItem settingsItem = new MenuItem("Settings");
+		settingsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				sysManager.startSettingsGUI();
+			}
+		});
+		
+		menu.add(settingsItem);
+		
+		if (ConnectionMaster.canAddToStartup()){//TODO: remove this.
 			//TODO: May want to change to "create startup shortcut"
 			final CheckboxMenuItem runOnStartup = new CheckboxMenuItem("Run at Startup",sysManager.getConnMaster().isInStartup());
 			runOnStartup.addActionListener(new ActionListener() {
@@ -134,6 +143,9 @@ public class SysNotificationManager {
 	}
 	public void startAnalysisGUI(){
 		new AnalysisGUIControl(this.getConnMaster().getLogger().getInternetLogFullPath()).startGUI();
+	}
+	public void startSettingsGUI(){
+		new CreateSettingsGUIControl(this.getConnMaster().getInputFilenameFullPath());
 	}
 	public void startAboutGUI(){
 		AboutGUIControl.startGUI();

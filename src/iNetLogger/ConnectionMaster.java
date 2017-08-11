@@ -1,5 +1,7 @@
 package iNetLogger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -21,11 +23,17 @@ public class ConnectionMaster {
 	private boolean keepRunning = true;
 	private boolean verbose = false;
 	private int maxMSBtwFileMsg = 5*60*1000;
+	private String appDataFolder = "logger_appData";
+	private String inputFilename = "logger_defaultSettings.txt";
 	
 	private boolean lastInternetConnected = false;
 
 	public ConnectionMaster(){
-		if(!FileUtils.lockInstance("NetLoggerRunning")){
+		if (!FileUtils.makeDirectory(this.getAppDataFolder())){
+			System.out.println("Cannot create appData folder, exiting.");
+			System.exit(5);
+		}
+		if(!FileUtils.lockInstance(FileUtils.fullfile(this.getAppDataFolder(),"NetLoggerRunning"))){
 			System.out.println("Already have 1 instance running, exiting.");
 			System.exit(4);
 		};
@@ -36,7 +44,11 @@ public class ConnectionMaster {
 	}
 
 	public ConnectionMaster(String localInterfaceAddress){
-		if(!FileUtils.lockInstance("NetLoggerRunning")){
+		if (!FileUtils.makeDirectory(this.getAppDataFolder())){
+			System.out.println("Cannot create appData folder, exiting.");
+			System.exit(5);
+		}
+		if(!FileUtils.lockInstance(FileUtils.fullfile(this.getAppDataFolder(),"NetLoggerRunning"))){
 			System.out.println("Already have 1 instance running, exiting.");
 			System.exit(4);
 		};
@@ -52,35 +64,33 @@ public class ConnectionMaster {
 
 		//args = new String[] {"-l192.168.1.1","-iwww.google.com,www.yahoo.com"};
 
+		
+		
 		System.out.println("Starting iNetLogger...");
 		ConnectionMaster master = new ConnectionMaster();
 
+		master.getLogger().setAppDataPath(master.getAppDataFolder());
+		
+		if (args.length == 0){
+			//No arguments provided, read in from file
+			BufferedReader br;
+			String fileContents = null;
+			try {
+				br = FileUtils.getFileReader(master.getInputFilenameFullPath());
+				fileContents = br.readLine();
+			} catch (IOException e) {
+				// Do nothing. Means go with hard-coded defaults
+				//e.printStackTrace();
+			}
+			
+			if (fileContents != null){
+				args = fileContents.split("\\s+");
+			}
+			
+		}
+		
 		// Command line arguments.
-		Options options = new Options();
-
-		Option help = new Option( "help", "print this message" );
-		options.addOption(help);
-
-		Option verboseInput = new Option("v", "verbose", false, "Be verbose about connection changes");
-		//output.setRequired(true);
-		options.addOption(verboseInput);
-
-		Option localAddressInput = new Option("l", "localAddress", true, "Local network address (Recommend default gateway)");
-		//input.setRequired(true);
-		options.addOption(localAddressInput);
-
-		Option iNetAddressInput = new Option("i", "iNetAddress", true, "Internet address (separate multiple by comma)");
-		//input.setRequired(true);
-		options.addOption(iNetAddressInput);
-
-		Option checkRateInput = new Option("r", "checkRate", true, "Connection check rate (seconds, integer)");
-		//output.setRequired(true);
-		options.addOption(checkRateInput);
-
-		Option savePathInput = new Option("s", "savePath", true, "Path to save log files (default is current working directory)");
-		//output.setRequired(true);
-		options.addOption(savePathInput);
-
+		Options options = ConnectionMaster.getCMDOptions();
 
 		String helpHeader = "Log Internet connection status to CSV.\n\n";
 
@@ -432,6 +442,54 @@ public class ConnectionMaster {
 	@SuppressWarnings("unused")
 	private void setMaxMSBtwFileMsg(int maxMSBtwFileMsg) {
 		this.maxMSBtwFileMsg = maxMSBtwFileMsg;
+	}
+
+	public String getAppDataFolder() {
+		return appDataFolder;
+	}
+
+	public void setAppDataFolder(String appDataFolder) {
+		this.appDataFolder = appDataFolder;
+	}
+
+	public String getInputFilename() {
+		return inputFilename;
+	}
+	public String getInputFilenameFullPath() {
+		return FileUtils.fullfile(this.getAppDataFolder(), inputFilename);
+	}
+
+	public void setInputFilename(String inputFilename) {
+		this.inputFilename = inputFilename;
+	}
+	
+	public static Options getCMDOptions(){
+		// Command line arguments.
+				Options options = new Options();
+
+				Option help = new Option( "help", "print this message" );
+				options.addOption(help);
+
+				Option verboseInput = new Option("v", "verbose", false, "Be verbose about connection changes");
+				//output.setRequired(true);
+				options.addOption(verboseInput);
+
+				Option localAddressInput = new Option("l", "localAddress", true, "Local network address (Recommend default gateway)");
+				//input.setRequired(true);
+				options.addOption(localAddressInput);
+
+				Option iNetAddressInput = new Option("i", "iNetAddress", true, "Internet address (separate multiple by comma)");
+				//input.setRequired(true);
+				options.addOption(iNetAddressInput);
+
+				Option checkRateInput = new Option("r", "checkRate", true, "Connection check rate (seconds, integer)");
+				//output.setRequired(true);
+				options.addOption(checkRateInput);
+
+				Option savePathInput = new Option("s", "savePath", true, "Path to save log files (default is current working directory)");
+				//output.setRequired(true);
+				options.addOption(savePathInput);
+				return options;
 	}
 
 }

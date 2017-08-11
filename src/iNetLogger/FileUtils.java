@@ -17,6 +17,15 @@ import java.util.Collection;
 public class FileUtils {
 
 	//private static Logger logger = Logger.getLogger(FileUtils.class);
+	
+	public static boolean makeDirectory(String directory){
+		File file = new File(directory);
+		if (!file.exists()){
+			return file.mkdirs();
+		}
+		return true;
+	}
+	
 	/*
 	 * Get a BufferedReader for a given filename.
 	 */

@@ -25,10 +25,11 @@ public class LogMaster {
 		this.setTimeLogFilename("lastTimeLogged.txt");
 		this.addMissingStopEntry();
 	}
-	public LogMaster(String internetLogFilename, String connectionLogFilename, String timeLogFilename){
+	public LogMaster(String internetLogFilename, String connectionLogFilename, String timeLogFilename, String appDataPath){
 		this.setInternetLogFilename(internetLogFilename);
 		this.setConnectionLogFilename(connectionLogFilename);
 		this.setTimeLogFilename(timeLogFilename);
+		this.setAppDataPath(appDataPath);
 		this.addMissingStopEntry();
 	}
 	
@@ -40,6 +41,7 @@ public class LogMaster {
 	private String internetLogFilename;
 	private String connectionLogFilename;
 	private String timeLogFilename;
+	private String appDataPath;
 	
 	private long lastSavedTime = 0;
 	private long maxTimeDiffToSave = 5*60*1000; //Time (ms) after which to save last log time
@@ -185,7 +187,7 @@ public class LogMaster {
 		return FileUtils.fullfile(this.getSavePath(), this.getConnectionLogFilename());
 	}
 	public String getTimeLogFullPath(){
-		return FileUtils.fullfile(this.getSavePath(), this.getTimeLogFilename());
+		return FileUtils.fullfile(this.getAppDataPath(), this.getTimeLogFilename());
 	}
 	
 	private boolean writeToInternetLog(){
@@ -464,6 +466,12 @@ public class LogMaster {
 	private int incrementFileIOExceptionCountTimeLog(){
 		this.setFileIOExceptionCountTimeLog(this.getFileIOExceptionCountTimeLog() + 1);
 		return this.getFileIOExceptionCountTimeLog();
+	}
+	public String getAppDataPath() {
+		return appDataPath;
+	}
+	public void setAppDataPath(String appDataPath) {
+		this.appDataPath = appDataPath;
 	}
 
 
