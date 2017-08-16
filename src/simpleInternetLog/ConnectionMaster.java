@@ -154,6 +154,7 @@ public class ConnectionMaster {
 		String savePath;
 		if (cmd.hasOption("savePath")){
 			savePath = cmd.getOptionValue("savePath");
+			//TODO: cannot read savePath that has a space in it... Can I put all arguments in args[] into a string?
 		}
 		else{
 			savePath = System.getProperty("user.dir");
@@ -364,6 +365,10 @@ public class ConnectionMaster {
 	public LinkedList<NetworkConnection> getConnectionList() {
 		return connectionList;
 	}
+	
+	public void setConnectionList(LinkedList<NetworkConnection> connectionList) {
+		this.connectionList = connectionList;
+	}
 
 	public NetworkInterfaceCheck getInterfaceCheck() {
 		return interfaceCheck;
@@ -415,11 +420,11 @@ public class ConnectionMaster {
 		this.keepRunning = keepRunning;
 	}
 
-	private boolean isVerbose() {
+	public boolean isVerbose() {
 		return verbose;
 	}
 
-	private void setVerbose(boolean verbose) {
+	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
 	}
 

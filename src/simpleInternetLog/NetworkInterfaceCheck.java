@@ -17,7 +17,7 @@ public class NetworkInterfaceCheck {
 
 	private boolean prevConnected;
 
-	private String localAddressString;
+	private String localAddressString = "";
 	private boolean hasLocalAddress;
 
 	public NetworkInterfaceCheck(){
@@ -95,7 +95,7 @@ public class NetworkInterfaceCheck {
 		this.hasLocalAddress = hasLocalAddress;
 	}
 
-	private String getLocalAddressString() {
+	public String getLocalAddressString() {
 		return localAddressString;
 	}
 

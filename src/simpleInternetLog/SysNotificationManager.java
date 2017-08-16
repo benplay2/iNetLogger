@@ -145,7 +145,7 @@ public class SysNotificationManager {
 		new AnalysisGUIControl(this.getConnMaster().getLogger().getInternetLogFullPath()).startGUI();
 	}
 	public void startSettingsGUI(){
-		new CreateSettingsGUIControl(this.getConnMaster().getInputFilenameFullPath());
+		new CreateSettingsGUIControl(this.getConnMaster()).startGUI();
 	}
 	public void startAboutGUI(){
 		AboutGUIControl.startGUI();
