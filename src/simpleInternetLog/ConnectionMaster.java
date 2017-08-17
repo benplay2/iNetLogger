@@ -2,9 +2,14 @@ package simpleInternetLog;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.cli.*;
 /*
  * This class manages NetworkConnections, checking them at the desired test rate.
@@ -62,7 +67,7 @@ public class ConnectionMaster {
 	 */
 	public static void main(String[] args){
 
-		//args = new String[] {"-l192.168.1.1","-iwww.google.com,www.yahoo.com"};
+		//args = new String[] {"-l192.168.1.1", "-i", "www.google.com,www.yahoo.com", "-s", "C:/some folder/other"};
 
 		
 		
@@ -83,8 +88,17 @@ public class ConnectionMaster {
 				//e.printStackTrace();
 			}
 			
-			if (fileContents != null){
-				args = fileContents.split("\\s+");
+			if (fileContents != null){				
+				
+				
+				List<String> tmplist = new ArrayList<String>();
+				Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(fileContents.trim());
+				while (m.find())
+				    tmplist.add(m.group(1).replace("\"", ""));
+				
+				args = tmplist.toArray(new String[tmplist.size()]);
+				//args = (String[]) tmplist.toArray();
+				
 			}
 			
 		}

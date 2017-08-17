@@ -97,13 +97,13 @@ public class Sc {
 		//local address
 		String localVal = this.getLocalAddressTextField().getText().trim();
 		if (!localVal.isEmpty()) {
-			localVal = "-l" + localVal + " ";
+			localVal = "-l " + localVal + " ";
 		}
 		
 		//Internet address
 		String intVal = this.getInternetAddressTextArea().getText().trim();
 		if (!intVal.isEmpty()) {
-			intVal = "-i" + intVal + " ";
+			intVal = "-i " + intVal + " ";
 		}
 		
 		//check rate
@@ -111,7 +111,7 @@ public class Sc {
 		if (!rateTxt.isEmpty()) {
 			try {
 				Long.valueOf(rateTxt);
-				rateTxt = "-r" + rateTxt + " ";
+				rateTxt = "-r " + rateTxt + " ";
 			} catch(NumberFormatException e){
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(null, 
@@ -126,7 +126,7 @@ public class Sc {
 		//save path
 		String saveTxt = this.getSavePathTextField().getText().trim();
 		if (!saveTxt.isEmpty()) {
-			saveTxt = "-s\"" + saveTxt + "\" ";
+			saveTxt = "-s \"" + saveTxt + "\" ";
 		}
 		
 		newContents = verboseVal + localVal + intVal + rateTxt + saveTxt;
@@ -157,7 +157,7 @@ public class Sc {
 				String intVal = this.getInternetAddressTextArea().getText().trim();
 				if (!intVal.isEmpty()) {
 					String[] iNetAddresses = intVal.split("\\s*,\\s*");
-					this.getMaster().setConnectionList(new LinkedList<NetworkConnection>()); //TODO: not working...
+					this.getMaster().setConnectionList(new LinkedList<NetworkConnection>()); //TODO: need to fix master to work with changing Internet connections
 					
 					for (String curAddressIn:iNetAddresses){
 						master.getConnectionList().add(new NetworkConnection(curAddressIn));
@@ -345,7 +345,15 @@ public class Sc {
 		pane.add(label, c);
 
 		c = new GridBagConstraints();
-		textArea = new JTextArea(StringUtils.join(getMaster().getConnectionList().toArray(), ",")); //TODO: not working...
+		String connectionTxt;
+		
+		LinkedList<String> connStrs = new LinkedList<String>();
+		for (NetworkConnection curConn : getMaster().getConnectionList()) {
+			connStrs.add(curConn.getAddressString());
+		}
+		connectionTxt = StringUtils.join(connStrs,",");
+		
+		textArea = new JTextArea(connectionTxt);
 		CreateSettingsGUIControl.this.setInternetAddressTextArea(textArea);;
 		textArea.setPreferredSize(new Dimension(500,75));
 		textArea.setLineWrap(true);
