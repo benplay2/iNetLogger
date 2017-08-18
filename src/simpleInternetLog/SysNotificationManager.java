@@ -99,22 +99,6 @@ public class SysNotificationManager {
 		
 		menu.add(settingsItem);
 		
-		if (ConnectionMaster.canAddToStartup()){//TODO: remove this.
-			//TODO: May want to change to "create startup shortcut"
-			final CheckboxMenuItem runOnStartup = new CheckboxMenuItem("Run at Startup",sysManager.getConnMaster().isInStartup());
-			runOnStartup.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (runOnStartup.getState()){
-						sysManager.getConnMaster().addWinStartup();
-					} else{
-						sysManager.getConnMaster().removeWinStartup();
-					}
-				}
-			});
-			menu.add(runOnStartup);
-		}
-
-
 
 		menu.add(aboutItem);
 		menu.add(closeItem);

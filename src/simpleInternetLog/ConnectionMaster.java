@@ -461,16 +461,6 @@ public class ConnectionMaster {
 		this.notifyStopMonitoring();
 	}
 	
-	public void addWinStartup(){
-		//TODO: add to startup folder
-	}
-	public void removeWinStartup(){
-		//TODO: remove shortcut from startup folder
-	}
-	public boolean isInStartup(){
-		//TODO: check if the shortcut is in startup folder
-		return false;
-	}
 	public static boolean canAddToStartup(){
 		return false;
 	}
