@@ -151,6 +151,13 @@ public class SysNotificationManager {
 		AboutGUIControl.startGUI();
 	}
 
+	public void displayResumeLogging() {
+		this.displayTray("Resuming Logging","simpleInternetLog has resumed connection logging after computer sleep detected.");
+	}
+	public void displayRestartMonitoringNewSettings() {
+		this.displayTray("Restarting Logging","simpleInternetLog has restarted connection logging with new settings.");
+	}
+	
 	public void displayStartLogging(){
 		this.displayTray("Starting Logging","simpleInternetLog has started connection logging.");
 	}

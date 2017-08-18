@@ -33,6 +33,9 @@ public class CreateSettingsGUIControl implements ActionListener{
 	private JTextField localAddressTextField;
 	private JTextArea internetAddressTextArea;
 	private JTextField savePathTextField;
+	
+	
+	private String lastInternetConnectionsString = "";
 
 
 	public CreateSettingsGUIControl(ConnectionMaster master){
@@ -155,9 +158,10 @@ public class Sc {
 				
 				//Internet address
 				String intVal = this.getInternetAddressTextArea().getText().trim();
-				if (!intVal.isEmpty()) {
+				if (!intVal.isEmpty() && !intVal.equals(this.getLastInternetConnectionsString())) {
+					this.setLastInternetConnectionsString(intVal);
 					String[] iNetAddresses = intVal.split("\\s*,\\s*");
-					this.getMaster().setConnectionList(new LinkedList<NetworkConnection>()); //TODO: need to fix master to work with changing Internet connections
+					this.getMaster().setConnectionList(new LinkedList<NetworkConnection>());
 					
 					for (String curAddressIn:iNetAddresses){
 						master.getConnectionList().add(new NetworkConnection(curAddressIn));
@@ -352,6 +356,7 @@ public class Sc {
 			connStrs.add(curConn.getAddressString());
 		}
 		connectionTxt = StringUtils.join(connStrs,",");
+		this.setLastInternetConnectionsString(connectionTxt);
 		
 		textArea = new JTextArea(connectionTxt);
 		CreateSettingsGUIControl.this.setInternetAddressTextArea(textArea);;
@@ -568,6 +573,18 @@ public class Sc {
 			this.setConnectionMasterValues();
 		}
 
+	}
+
+
+
+	private String getLastInternetConnectionsString() {
+		return lastInternetConnectionsString;
+	}
+
+
+
+	private void setLastInternetConnectionsString(String lastInternetConnectionsString) {
+		this.lastInternetConnectionsString = lastInternetConnectionsString;
 	}
 
 }

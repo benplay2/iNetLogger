@@ -30,6 +30,7 @@ public class ConnectionMaster {
 	private int maxMSBtwFileMsg = 5*60*1000;
 	private String appDataFolder = "logger_appData";
 	private String inputFilename = "logger_defaultSettings.txt";
+	private boolean connectionChanged;
 	
 	private boolean lastInternetConnected = false;
 
@@ -178,6 +179,37 @@ public class ConnectionMaster {
 			System.out.println("Saving log files to: " + master.getLogger().getSavePath());
 		}
 
+		
+		Runtime.getRuntime().addShutdownHook(new iNetLoggerShutdownHook(master));
+		
+		int status = 1;
+		master.notifyStartMonitoring();
+		while (status > 0) {
+			status = master.runConnectionLoop();
+			switch (status) {
+			case 1:
+				master.notifyResumeMonitoring();
+				break;
+			case 2:
+				master.notifyStartMonitoringNewSettings();
+				break;
+			}
+			
+			
+		}
+		
+		
+
+
+	}
+	
+
+	/*
+	 * Run connection loop (perform the main connection checking.
+	 * 
+	 * Returns something > 0 if want to restart loop after return
+	 */
+	public int runConnectionLoop() {
 		long nextCheckTime = System.currentTimeMillis();
 		long endLoopTime = nextCheckTime;
 		long pauseTime;
@@ -187,22 +219,24 @@ public class ConnectionMaster {
 		boolean previousIfaceConnected;
 		boolean tmpLastConnected;
 
-		boolean[] connectionChangedArray = new boolean[master.getConnectionList().size()];
+		boolean[] connectionChangedArray = new boolean[this.getConnectionList().size()];
+		
+		this.setConnectionChanged(false);
+		
 		NetworkConnection curConnection;
 		Iterator<NetworkConnection> networkConnIter;
 		boolean firstRun = true;
 		boolean fileWriteOK = true;
 		long lastFileWriteErrorNotification = 0;
 
-		Runtime.getRuntime().addShutdownHook(new iNetLoggerShutdownHook(master));
 
 		startTime = System.currentTimeMillis();
 		
-		while (master.isKeepRunning()){
-			fileWriteOK = master.getLogger().writeQueuedEntriesToFile();
-			if (!fileWriteOK && ((startTime - lastFileWriteErrorNotification) > master.getMaxMSBtwFileMsg())){
+		while (this.isKeepRunning()){
+			fileWriteOK = this.getLogger().writeQueuedEntriesToFile();
+			if (!fileWriteOK && ((startTime - lastFileWriteErrorNotification) > this.getMaxMSBtwFileMsg())){
 				lastFileWriteErrorNotification = startTime;
-				master.getNotifMngr().displayErrorWriting();
+				this.getNotifMngr().displayErrorWriting();
 			}
 			pauseTime = nextCheckTime - startTime;
 			
@@ -214,19 +248,22 @@ public class ConnectionMaster {
 					System.exit(0);
 				}
 			}
-			if (System.currentTimeMillis() - startTime > (master.getSampleRate() * 2) && !firstRun){
+			if (System.currentTimeMillis() - startTime > (this.getSampleRate() * 2) && !firstRun){
 				//Detected computer sleep event...
-				master.notifyStopMonitoring(endLoopTime);
-				firstRun = true;
+				this.notifyStopMonitoring(endLoopTime);
+				//firstRun = true;
+				return 1; //Start the loop over again
+			} else if (this.isConnectionChanged()) {
+				return 2; //start the loop over again, need to re-create connection information
 			}
 			startTime = System.currentTimeMillis();
-			previousIfaceConnected = master.wasLastNetworkConnected(); //this method gets updated automatically, so save previous result
+			previousIfaceConnected = this.wasLastNetworkConnected(); //this method gets updated automatically, so save previous result
 
-			if (master.getInterfaceCheck().isNetworkConnected()){
+			if (this.getInterfaceCheck().isNetworkConnected()){
 				iNetConnected = false;
 				Arrays.fill(connectionChangedArray, false);
-				networkConnIter = master.getConnectionList().iterator();
-				for (int i=0; i<master.getConnectionList().size(); i++){
+				networkConnIter = this.getConnectionList().iterator();
+				for (int i=0; i<this.getConnectionList().size(); i++){
 					curConnection = networkConnIter.next();
 					tmpLastConnected = curConnection.wasPrevConnected();
 					if (curConnection.isConnected()){
@@ -236,64 +273,64 @@ public class ConnectionMaster {
 					}
 					else if(tmpLastConnected){connectionChangedArray[i] = true;}
 				}
-				if (iNetConnected != master.wasLastInternetConnected() && !firstRun){ //Internet connection status change
+				if (iNetConnected != this.wasLastInternetConnected() && !firstRun){ //Internet connection status change
 					if (iNetConnected){
-						master.notifyInternetStatus(true);
+						this.notifyInternetStatus(true);
 					}
 					else{
-						master.notifyInternetStatus(false);
+						this.notifyInternetStatus(false);
 					}
 				}
 				else if (!firstRun){//Internet connection status did not change
 					if (Arrays.asList(connectionChangedArray).contains(true)){
 						//We had an individual connection status change
-						for (int i=0; i < master.getConnectionList().size(); i++){
+						for (int i=0; i < this.getConnectionList().size(); i++){
 							if (connectionChangedArray[i]){
-								if (master.getConnectionList().get(i).wasPrevConnected()){
+								if (this.getConnectionList().get(i).wasPrevConnected()){
 									//We have reconnected to this connection!
-									master.notifyIndividualConnectionStatus(true, master.getConnectionList().get(i).getAddressString());
+									this.notifyIndividualConnectionStatus(true, this.getConnectionList().get(i).getAddressString());
 								}
 								else {
 									//We have lost connection to this connection!
-									master.notifyIndividualConnectionStatus(false, master.getConnectionList().get(i).getAddressString());
+									this.notifyIndividualConnectionStatus(false, this.getConnectionList().get(i).getAddressString());
 								}
 							}
 						}
 					}
 				}
 				if (!previousIfaceConnected && !firstRun){
-					master.notifyInterfaceStatus(true,iNetConnected);
+					this.notifyInterfaceStatus(true,iNetConnected);
 				}
-				master.setLastInternetConnected(iNetConnected);
+				this.setLastInternetConnected(iNetConnected);
 			}
 			else if(previousIfaceConnected && !firstRun){
-					master.notifyInterfaceStatus(false,false);
+					this.notifyInterfaceStatus(false,false);
 					
 			}
 			if (firstRun){ //add some initial entries
 				
-				master.notifyStartMonitoring();
-				for (int i=0; i < master.getConnectionList().size(); i++){
-						if (master.getConnectionList().get(i).wasPrevConnected()){
+				
+				for (int i=0; i < this.getConnectionList().size(); i++){
+						if (this.getConnectionList().get(i).wasPrevConnected()){
 							//We are connected to this connection!
-							master.notifyIndividualConnectionStatus(true, master.getConnectionList().get(i).getAddressString());
+							this.notifyIndividualConnectionStatus(true, this.getConnectionList().get(i).getAddressString());
 						}
 						else {
 							//We are not connected to this connection!
-							master.notifyIndividualConnectionStatus(false, master.getConnectionList().get(i).getAddressString());
+							this.notifyIndividualConnectionStatus(false, this.getConnectionList().get(i).getAddressString());
 						}
 				}
 				
 				firstRun = false;
 			}
 
-			nextCheckTime = startTime + master.getSampleRate();
+			nextCheckTime = startTime + this.getSampleRate();
 			endLoopTime = System.currentTimeMillis();
 		}
-		//master.getLogger().logStopLogging();
-
+		//this.getLogger().logStopLogging();
+		
+		return -1; //Stop program.
 	}
-
 	public void notifyInternetStatus(boolean internetConnected){
 		if (internetConnected){
 			this.getLogger().logHaveInternetConnection();
@@ -354,6 +391,17 @@ public class ConnectionMaster {
 		this.getLogger().logStartLogging(localConnected, internetConnected);
 		this.getNotifMngr().displayStartLogging();
 	}
+	
+	
+	
+	public void notifyResumeMonitoring() {
+		this.getNotifMngr().displayResumeLogging();
+	}
+	
+	public void notifyStartMonitoringNewSettings() {
+		this.getNotifMngr().displayRestartMonitoringNewSettings();
+	}
+	
 	public void notifyStartMonitoring(){
 		this.getLogger().logStartLogging(this.wasLastNetworkConnected(), this.wasLastInternetConnected());
 		this.getNotifMngr().displayStartLogging();
@@ -382,6 +430,7 @@ public class ConnectionMaster {
 	
 	public void setConnectionList(LinkedList<NetworkConnection> connectionList) {
 		this.connectionList = connectionList;
+		this.setConnectionChanged(true);
 	}
 
 	public NetworkInterfaceCheck getInterfaceCheck() {
@@ -509,6 +558,14 @@ public class ConnectionMaster {
 				//output.setRequired(true);
 				options.addOption(savePathInput);
 				return options;
+	}
+
+	public boolean isConnectionChanged() {
+		return connectionChanged;
+	}
+
+	public void setConnectionChanged(boolean connectionChanged) {
+		this.connectionChanged = connectionChanged;
 	}
 
 }
