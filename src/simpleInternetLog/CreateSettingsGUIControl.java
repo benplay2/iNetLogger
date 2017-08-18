@@ -136,14 +136,16 @@ public class Sc {
 		
 		try {
 			FileUtils.replaceFileContents(this.getMaster().getInputFilenameFullPath(), newContents);
+			this.setConnectionMasterValues();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, 
                     "Unable to write defaults to default file!", 
                     "Unable to Write", 
                     JOptionPane.WARNING_MESSAGE);
 		}
+		
+		
 	}
 	public void setConnectionMasterValues() {
 		//verbose
@@ -317,7 +319,7 @@ public class Sc {
 		c.gridy = 3;       //row
 		pane.add(label, c);
 
-		c = new GridBagConstraints();
+		c = new GridBagConstraints(); //TODO: change look based on content connections
 		textField = new JTextField(CreateSettingsGUIControl.this.getMaster().getInterfaceCheck().getLocalAddressString());
 		CreateSettingsGUIControl.this.setLocalAddressTextField(textField);
 		textField.setPreferredSize(new Dimension(150,25));
