@@ -1,6 +1,7 @@
 package simpleInternetLog;
 
 import java.awt.Checkbox;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -18,6 +19,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,9 +37,13 @@ public class CreateSettingsGUIControl implements ActionListener{
 	private JTextArea internetAddressTextArea;
 	private JTextField savePathTextField;
 	
+	private Color connectedColor = new Color(193, 239, 143);
+	private Color notConnectedColor = new Color(255, 177, 155);
 	
 	private String lastInternetConnectionsString = "";
-
+	private String origNetworkAddressString = "";
+	private boolean networkAddressAutomaticallyObtained;
+	private boolean lastLocalConnected = false;
 
 	public CreateSettingsGUIControl(ConnectionMaster master){
 		this.setMaster(master);
@@ -100,7 +107,9 @@ public class Sc {
 		//local address
 		String localVal = this.getLocalAddressTextField().getText().trim();
 		if (!localVal.isEmpty()) {
-			localVal = "-l " + localVal + " ";
+			if (!(this.isNetworkAddressAutomaticallyObtained() && localVal.equals(this.getOrigNetworkAddressString()))) {
+				localVal = "-l " + localVal + " ";
+			}
 		}
 		
 		//Internet address
@@ -155,7 +164,9 @@ public class Sc {
 				//local address
 				String localVal = this.getLocalAddressTextField().getText().trim();
 				if (!localVal.isEmpty()) {
-					master.getInterfaceCheck().setLocalAddressString(localVal);
+					if (!(this.isNetworkAddressAutomaticallyObtained() && localVal.equals(this.getOrigNetworkAddressString()))) {
+						master.getInterfaceCheck().setLocalAddressString(localVal);
+					}
 				}
 				
 				//Internet address
@@ -319,8 +330,32 @@ public class Sc {
 		c.gridy = 3;       //row
 		pane.add(label, c);
 
-		c = new GridBagConstraints(); //TODO: change look based on content connections
-		textField = new JTextField(CreateSettingsGUIControl.this.getMaster().getInterfaceCheck().getLocalAddressString());
+		c = new GridBagConstraints();
+		NetworkInterfaceCheck intCheck = this.getMaster().getInterfaceCheck();
+		this.setNetworkAddressAutomaticallyObtained(intCheck.isAutoDeterminedAddress());
+		this.setOrigNetworkAddressString(intCheck.getLocalAddressString());
+		textField = new JTextField(intCheck.getLocalAddressString());
+		if (intCheck.isPrevConnected()) {
+			this.setLastLocalConnected(true);
+			textField.setBackground(this.getConnectedColor());
+		} else {
+			this.setLastLocalConnected(false);
+			textField.setBackground(this.getNotConnectedColor());
+		}
+
+		textField.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				//thisControl.updateNetworkConnectionColor();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				thisControl.updateNetworkConnectionColor();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				thisControl.updateNetworkConnectionColor();
+			}
+
+		}
+				);
 		CreateSettingsGUIControl.this.setLocalAddressTextField(textField);
 		textField.setPreferredSize(new Dimension(150,25));
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -559,7 +594,25 @@ public class Sc {
 	}
 
 
-
+	private void updateNetworkConnectionColor() {
+		String localVal = this.getLocalAddressTextField().getText().trim();
+		if (localVal.isEmpty() && this.isLastLocalConnected()) {
+			this.setLastLocalConnected(false);
+			this.getLocalAddressTextField().setBackground(this.getNotConnectedColor());
+			return;
+		}
+		if (NetworkInterfaceCheck.isAddressReachable(localVal)) {
+			if (!this.isLastLocalConnected()) {
+				this.setLastLocalConnected(true);
+				this.getLocalAddressTextField().setBackground(this.getConnectedColor());
+			}
+		} else {
+			if (this.isLastLocalConnected()) {
+				this.setLastLocalConnected(false);
+				this.getLocalAddressTextField().setBackground(this.getNotConnectedColor());
+			}
+		}
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -588,5 +641,54 @@ public class Sc {
 	private void setLastInternetConnectionsString(String lastInternetConnectionsString) {
 		this.lastInternetConnectionsString = lastInternetConnectionsString;
 	}
+
+
+
+	private String getOrigNetworkAddressString() {
+		return origNetworkAddressString;
+	}
+
+
+
+	private void setOrigNetworkAddressString(String origNetworkAddressString) {
+		this.origNetworkAddressString = origNetworkAddressString;
+	}
+
+
+
+	private boolean isNetworkAddressAutomaticallyObtained() {
+		return networkAddressAutomaticallyObtained;
+	}
+
+
+
+	private void setNetworkAddressAutomaticallyObtained(boolean networkAddressAutomaticallyObtained) {
+		this.networkAddressAutomaticallyObtained = networkAddressAutomaticallyObtained;
+	}
+
+
+
+	private Color getConnectedColor() {
+		return connectedColor;
+	}
+
+
+	private Color getNotConnectedColor() {
+		return notConnectedColor;
+	}
+
+
+
+	private boolean isLastLocalConnected() {
+		return lastLocalConnected;
+	}
+
+
+
+	private void setLastLocalConnected(boolean lastLocalConnected) {
+		this.lastLocalConnected = lastLocalConnected;
+	}
+
+
 
 }

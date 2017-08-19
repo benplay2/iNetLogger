@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 /*
@@ -16,6 +17,7 @@ import java.util.Enumeration;
 public class NetworkInterfaceCheck {
 
 	private boolean prevConnected;
+	private boolean autoDeterminedAddress = false;
 
 	private String localAddressString = "";
 	private boolean hasLocalAddress;
@@ -27,7 +29,7 @@ public class NetworkInterfaceCheck {
 	}
 	public NetworkInterfaceCheck(String localAddress){
 		// If provide localAddress, will determine if interface is working by connecting to localAddress
-
+		this.setAutoDeterminedAddress(false);
 		this.setLocalAddressString(localAddress);
 		this.isNetworkConnected();
 
@@ -44,7 +46,8 @@ public class NetworkInterfaceCheck {
 			try {
 				connected = InetAddress.getByName(this.getLocalAddressString()).isReachable(1000);
 				if (!connected){
-					connected = InetAddress.getByName("www.google.com").isReachable(500);
+					connected = NetworkInterfaceCheck.isAddressReachable("www.google.com");//InetAddress.getByName("www.google.com").isReachable(500);
+					
 					if (connected){
 						//We have a problem... local is not reachable but internet is
 						System.out.println("Problem detected with local network address provided! (\"" + this.getLocalAddressString() + "\")");
@@ -74,6 +77,20 @@ public class NetworkInterfaceCheck {
 		return connected;
 	}
 
+	public static boolean isAddressReachable(String address) {
+		try {
+			return InetAddress.getByName(address).isReachable(500);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return false;
+		}
+	}
+	
 	private Enumeration<NetworkInterface> getEni() throws SocketException {
 		return NetworkInterface.getNetworkInterfaces();
 	}
@@ -105,6 +122,12 @@ public class NetworkInterfaceCheck {
 			this.localAddressString = localAddressString;
 		}
 		return;
+	}
+	public boolean isAutoDeterminedAddress() {
+		return autoDeterminedAddress;
+	}
+	private void setAutoDeterminedAddress(boolean autoDeterminedAddress) {
+		this.autoDeterminedAddress = autoDeterminedAddress;
 	}
 
 }
