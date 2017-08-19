@@ -169,7 +169,6 @@ public class ConnectionMaster {
 		String savePath;
 		if (cmd.hasOption("savePath")){
 			savePath = cmd.getOptionValue("savePath");
-			//TODO: cannot read savePath that has a space in it... Can I put all arguments in args[] into a string?
 		}
 		else{
 			savePath = System.getProperty("user.dir");

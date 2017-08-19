@@ -39,11 +39,13 @@ public class CreateSettingsGUIControl implements ActionListener{
 	
 	private Color connectedColor = new Color(193, 239, 143);
 	private Color notConnectedColor = new Color(255, 177, 155);
+	private Color autoConnectedColor = new Color(147, 217, 249);
 	
 	private String lastInternetConnectionsString = "";
 	private String origNetworkAddressString = "";
 	private boolean networkAddressAutomaticallyObtained;
 	private boolean lastLocalConnected = false;
+	private boolean lastIterAutoConn = false;
 
 	public CreateSettingsGUIControl(ConnectionMaster master){
 		this.setMaster(master);
@@ -335,13 +337,7 @@ public class Sc {
 		this.setNetworkAddressAutomaticallyObtained(intCheck.isAutoDeterminedAddress());
 		this.setOrigNetworkAddressString(intCheck.getLocalAddressString());
 		textField = new JTextField(intCheck.getLocalAddressString());
-		if (intCheck.isPrevConnected()) {
-			this.setLastLocalConnected(true);
-			textField.setBackground(this.getConnectedColor());
-		} else {
-			this.setLastLocalConnected(false);
-			textField.setBackground(this.getNotConnectedColor());
-		}
+		this.setLastLocalConnected(intCheck.isPrevConnected());
 
 		textField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
@@ -357,6 +353,7 @@ public class Sc {
 		}
 				);
 		CreateSettingsGUIControl.this.setLocalAddressTextField(textField);
+		thisControl.updateNetworkConnectionColor();
 		textField.setPreferredSize(new Dimension(150,25));
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipady = 10;   
@@ -593,24 +590,50 @@ public class Sc {
 		this.savePathTextField = savePathTextField;
 	}
 
-
 	private void updateNetworkConnectionColor() {
-		String localVal = this.getLocalAddressTextField().getText().trim();
+		updateNetworkConnectionColor(this.getLocalAddressTextField().getText().trim());
+	}
+
+	private void updateNetworkConnectionColor(String localVal) {
 		if (localVal.isEmpty() && this.isLastLocalConnected()) {
 			this.setLastLocalConnected(false);
-			this.getLocalAddressTextField().setBackground(this.getNotConnectedColor());
+			this.getLocalAddressTextField().setBackground(this.getAutoConnectedColor());
+			this.getLocalAddressTextField().setToolTipText("Will attempt to automatically determine");
 			return;
 		}
-		if (NetworkInterfaceCheck.isAddressReachable(localVal)) {
-			if (!this.isLastLocalConnected()) {
+
+		boolean reachable = NetworkInterfaceCheck.isAddressReachable(localVal);
+
+		if (this.isNetworkAddressAutomaticallyObtained() && localVal.equals(this.getOrigNetworkAddressString())) {
+			if (!this.isLastIterAutoConn()) {
+				this.setLastIterAutoConn(true);
+				this.getLocalAddressTextField().setBackground(this.getAutoConnectedColor());
+			}
+			if (reachable && !this.isLastLocalConnected()) {
+				this.setLastLocalConnected(true);
+				this.getLocalAddressTextField().setToolTipText("Automatically determined, connected");
+				return;
+			} else if(!reachable && this.isLastLocalConnected()){
+				this.setLastLocalConnected(false);
+				this.getLocalAddressTextField().setToolTipText("Automatically determined, not connected");
+				return;
+			}
+		} else if (this.isLastIterAutoConn()) {
+			this.setLastIterAutoConn(false);
+		}
+		
+		
+		
+		
+		if (reachable && !this.isLastLocalConnected()) {
 				this.setLastLocalConnected(true);
 				this.getLocalAddressTextField().setBackground(this.getConnectedColor());
-			}
-		} else {
-			if (this.isLastLocalConnected()) {
+				this.getLocalAddressTextField().setToolTipText("Connected");
+			
+		} else if (!reachable && this.isLastLocalConnected()){
 				this.setLastLocalConnected(false);
 				this.getLocalAddressTextField().setBackground(this.getNotConnectedColor());
-			}
+				this.getLocalAddressTextField().setToolTipText("Not Connected");
 		}
 	}
 
@@ -687,6 +710,30 @@ public class Sc {
 
 	private void setLastLocalConnected(boolean lastLocalConnected) {
 		this.lastLocalConnected = lastLocalConnected;
+	}
+
+
+
+	private Color getAutoConnectedColor() {
+		return autoConnectedColor;
+	}
+
+
+
+	private void setAutoConnectedColor(Color autoConnectedColor) {
+		this.autoConnectedColor = autoConnectedColor;
+	}
+
+
+
+	private boolean isLastIterAutoConn() {
+		return lastIterAutoConn;
+	}
+
+
+
+	private void setLastIterAutoConn(boolean lastIterAutoConn) {
+		this.lastIterAutoConn = lastIterAutoConn;
 	}
 
 

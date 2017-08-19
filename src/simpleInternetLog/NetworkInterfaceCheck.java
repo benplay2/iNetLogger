@@ -24,16 +24,12 @@ public class NetworkInterfaceCheck {
 	private boolean autoDeterminedAddress = false;
 
 	private String localAddressString = "";
-	private boolean hasLocalAddress;
+	private boolean hasLocalAddress = false;
 
 	public NetworkInterfaceCheck(){
-		try {
-			this.setLocalAddressString(NetworkInterfaceCheck.getDefaultGatewayAddress());
-			this.setAutoDeterminedAddress(true);
-		} catch (DefaultAddressLookupFailException e) {
+		if (!this.tryToAddAutoDeterminedAddress()) {
 			this.setHasLocalAddress(false);
-		}
-		
+		}		
 		this.isNetworkConnected();
 
 	}
@@ -44,48 +40,77 @@ public class NetworkInterfaceCheck {
 		this.isNetworkConnected();
 
 	}
+	
+	public boolean tryToAddAutoDeterminedAddress() {
+		String address;
+		try {
+			address = NetworkInterfaceCheck.getDefaultGatewayAddress();
+		} catch (DefaultAddressLookupFailException e) {
+			return false;
+		}
+		
+		if (NetworkInterfaceCheck.isAddressReachable(address)) {
+			this.setLocalAddressString(address);
+			this.setAutoDeterminedAddress(true);
+			return true;
+		}else {
+			return false;
+		}
+		
+	}
+	
 
 	/*
 	 * Check if we have a connection
 	 */
 	public boolean isNetworkConnected(){
+		
+		if (!this.hasLocalAddress) {
+			this.tryToAddAutoDeterminedAddress();
+		}
+		
 		boolean connected = false;
-		//TODO: add some stuff for automatically generated default gateway
 		if (this.isHasLocalAddress()){
 			//See if we can connect to the local address
 			try {
 				connected = InetAddress.getByName(this.getLocalAddressString()).isReachable(1000);
 				if (!connected){
 					//maybe add the logic to determine the local address here...
-					
-					connected = NetworkInterfaceCheck.isAddressReachable("www.google.com");//InetAddress.getByName("www.google.com").isReachable(500);
-					
-					if (connected){
+
+					if (this.isAutoDeterminedAddress()) {
+						//try to auto-generate again
+						connected = this.tryToAddAutoDeterminedAddress();
+					}
+					if (!connected && NetworkInterfaceCheck.isAddressReachable("www.google.com")) {
 						//We have a problem... local is not reachable but internet is
 						System.out.println("Problem detected with local network address provided! (\"" + this.getLocalAddressString() + "\")");
 						this.setHasLocalAddress(false);
+						connected = true;
 					}
 				}
 			} catch (IOException e) {
 				//e.printStackTrace();
-				connected = false;
+				if (this.isAutoDeterminedAddress()) {
+					connected = this.tryToAddAutoDeterminedAddress();
+				} else {
+					connected = false;
+				}
 			}
 
 		}
-		else{// We were not provided a local address
+		else{// We were not provided a local address and were unable to generate one....
 			
-			//Try to generate one.... would be nice if it works
-			
-			try {
-				for (Enumeration<NetworkInterface> eni = getEni(); eni.hasMoreElements();){
-					if (eni.nextElement().isUp()){
-						connected = true;
-						// TODO: Do I want to have something better than this?
-					}
-				}
-			} catch (SocketException e) {
-				connected = false;
-			}
+			// Assume we can't connect if we can't connect to internet... this is not ideal
+			connected = NetworkInterfaceCheck.isAddressReachable("www.google.com");
+//			try {
+//				for (Enumeration<NetworkInterface> eni = getEni(); eni.hasMoreElements();){
+//					if (eni.nextElement().isUp()){
+//						connected = true;
+//					}
+//				}
+//			} catch (SocketException e) {
+//				connected = false;
+//			}
 		}
 
 		this.setPrevConnected(connected);
