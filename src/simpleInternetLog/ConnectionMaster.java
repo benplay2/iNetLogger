@@ -138,7 +138,7 @@ public class ConnectionMaster {
 				System.out.println("Local address set to: " + localAddress);
 			}
 		} else{
-			System.out.println("Local address not provided. It is recommended to provide local router IP.");
+			//System.out.println("Local address not provided. It is recommended to provide local router IP."); //Maybe don't want this anymore if we can determine automatically
 		}
 		if (cmd.hasOption("iNetAddress")){
 			String iNetAddress = cmd.getOptionValue("iNetAddress");
