@@ -460,6 +460,9 @@ public class ConnectionMaster {
 		System.out.println("Exiting.");
 		this.setKeepRunning(false);
 		this.notifyStopMonitoring();
+		//TODO: What if we haven't been able to write some logs to file?
+		//Should we prompt user to close all open files and not close until they can be written to?
+		//Should we try to save the unwritten entries to a new temporary file?
 	}
 	
 	public static boolean canAddToStartup(){
