@@ -9,6 +9,7 @@ import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 /*
+ * This is a class to handle notifications to the user through the tray icon.
  * 
  * Created by Ben Brust 2017
  */
@@ -27,7 +28,7 @@ public class SysNotificationManager {
 			SystemTray tray = SystemTray.getSystemTray();
 			Image image = Toolkit.getDefaultToolkit().createImage("dependentFiles" + File.separator + "icon_v6.png");
 			SysNotificationManager.setCurIcon(image);
-			trayIcon = new TrayIcon(image,"simpleInternetLog");
+			trayIcon = new TrayIcon(image,"SimpleInternetLog");
 			trayIcon.setImageAutoSize(true);
 
 			try {
@@ -136,14 +137,14 @@ public class SysNotificationManager {
 	}
 
 	public void displayResumeLogging() {
-		this.displayTray("Resuming Logging","simpleInternetLog has resumed connection logging after computer sleep detected.");
+		this.displayTray("Resuming Logging","SimpleInternetLog has resumed connection logging after computer sleep detected.");
 	}
 	public void displayRestartMonitoringNewSettings() {
-		this.displayTray("Restarting Logging","simpleInternetLog has restarted connection logging with new settings.");
+		this.displayTray("Restarting Logging","SimpleInternetLog has restarted connection logging with new settings.");
 	}
 	
 	public void displayStartLogging(){
-		this.displayTray("Starting Logging","simpleInternetLog has started connection logging.");
+		this.displayTray("Starting Logging","SimpleInternetLog by Ben Brust has started connection logging.");
 	}
 	public void displayInterfaceConnected(){
 		this.displayTray("Interface Connected!", "Now connected to local network");
@@ -164,11 +165,16 @@ public class SysNotificationManager {
 		this.displayTray("Connection Lost!", "Computer no longer connected to \"" + connectionAddress + "\"");
 	}
 	public void displayErrorWriting(String filename){
-		this.displayTray("Unable to write to file!", "simpleInternetLog is unable to write to \"" + filename + "\". Close any applications using this file or simpleInternetLog will quit.");
+		this.displayTray("Unable to write to file!", "SimpleInternetLog is unable to write to \"" + filename + "\". Close any applications using this file or SimpleInternetLog will quit.");
 	}
 	public void displayErrorWriting(){
-		this.displayTray("Unable to write to file!", "simpleInternetLog is unable to write to at least one of the log files. Close any applications using the files.");
+		this.displayTray("Unable to write to file!", "SimpleInternetLog is unable to write to at least one of the log files. Close any applications using the files.");
 	}
+	public void displayInternalError(String specificMessage) {
+		String message = "SimpleInternetLog encountered an internal error: " + specificMessage;
+		this.displayTray("Encountered internal error", message);
+	}
+	
 	private void displayTray(String caption, String text){
 		if (!this.isTraySuppported()){
 			return;
@@ -213,5 +219,7 @@ public class SysNotificationManager {
 	public static void setCurIcon(Image curIcon) {
 		SysNotificationManager.curIcon = curIcon;
 	}
+
+	
 
 }

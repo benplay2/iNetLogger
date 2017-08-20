@@ -1,10 +1,13 @@
 package simpleInternetLog;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import net.jimmc.jshortcut.JShellLink;
+
+/*
+ * This is a class to create shortcuts on Windows machines.
+ * 
+ * Created by Ben Brust 2017.
+ */
 
 public class ShortcutCreator {
 	
@@ -21,36 +24,6 @@ public class ShortcutCreator {
 
 	    }
 
-	    public static void main(String a[]) {
-	    	//ShortcutCreation sc = new ShortcutCreation();
-	        //sc.createDesktopShortcut();
-	    	ShortcutCreator sc = new ShortcutCreator("simpleInternetLog.jar","SimpleInternetLogger");
-	    	try {
-				System.out.println(new File(".").getAbsolutePath());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    	
-	        System.out.println(System.getProperty("user.dir"));
-	        //System.out.println(System.getProperty("java.class.path"));
-	    	System.out.println(sc.getClass().getProtectionDomain().getCodeSource().getLocation());
-	    	
-	    	System.out.println(JShellLink.getDirectory("programs"));
-	    	
-	    	
-	    	File pto = null;
-			try {
-				pto = new File(ConnectionMaster.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-	    	System.out.println(pto.getAbsolutePath());
-	    	
-	    	//sc.createDesktopShortcut();
-	    }
 	    
 	    public void createDesktopShortcut() {
 	    	this.createShortcut(JShellLink.getDirectory("desktop"));

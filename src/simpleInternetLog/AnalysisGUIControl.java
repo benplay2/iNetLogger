@@ -49,7 +49,7 @@ public class AnalysisGUIControl implements ActionListener{
 	}
 	
 	public void createAndShowGUI(){
-		JFrame frame = new JFrame("simpleInternetLog Analysis by Ben Brust");
+		JFrame frame = new JFrame("SimpleInternetLog Analysis by Ben Brust");
 		this.setMainFrame(frame);
 		frame.setIconImage(SysNotificationManager.getCurIcon());
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

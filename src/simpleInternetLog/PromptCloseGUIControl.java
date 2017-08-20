@@ -16,7 +16,7 @@ import javax.swing.JLabel;
 public class PromptCloseGUIControl{
 
 	public static void createAndShowGUI(){
-		JFrame mainFrame = new JFrame("Really close iNetLogger?");
+		JFrame mainFrame = new JFrame("Really close SimpleInternetLog?");
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		//mainFrame.setSize(400, 300);
 		mainFrame.setLocationRelativeTo(null);
@@ -43,7 +43,7 @@ public class PromptCloseGUIControl{
 		}
 		//TODO: make this GUI look better...
 		
-		JLabel label = new JLabel("Are you sure you want to close iNetLogger?");
+		JLabel label = new JLabel("Are you sure you want to close SimpleInternetLog?");
 		label.setFont(label.getFont().deriveFont((float)16));
 		pane.add(label,BorderLayout.CENTER);
 		

@@ -18,14 +18,18 @@ public class LogMaster {
 	 * 2. CSV file containing entries about individual connection changes
 	 * 3. Text file containing last time that iNetLogger was running.
 	 */
+	
+	private ConnectionMaster master;
 
-	public LogMaster(){
+	public LogMaster(ConnectionMaster master){
+		this.setMaster(master);
 		this.setInternetLogFilename("iNetLog.csv");
 		this.setConnectionLogFilename("connectionLog.csv");
 		this.setTimeLogFilename("lastTimeLogged.txt");
 		this.addMissingStopEntry();
 	}
-	public LogMaster(String internetLogFilename, String connectionLogFilename, String timeLogFilename, String appDataPath){
+	public LogMaster(ConnectionMaster master, String internetLogFilename, String connectionLogFilename, String timeLogFilename, String appDataPath){
+		this.setMaster(master);
 		this.setInternetLogFilename(internetLogFilename);
 		this.setConnectionLogFilename(connectionLogFilename);
 		this.setTimeLogFilename(timeLogFilename);
@@ -97,10 +101,15 @@ public class LogMaster {
 		try {
 			br.close();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			//Not sure what to do with this error. Return? Error out?
 			e1.printStackTrace();
 			System.out.println("Unable to close reader. Exiting.");
+			this.getMaster().getNotifMngr().displayInternalError("Unable to close reader.");
+			try {
+				Thread.sleep(1000 * 30);
+			} catch (InterruptedException e) {
+				System.exit(3);
+			}
 			System.exit(3);
 		}
 		if (curLine == null){
@@ -139,10 +148,15 @@ public class LogMaster {
 		try {
 			br.close();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			//Not sure what to do with this error. Return? Error out?
 			e1.printStackTrace();
 			System.out.println("Unable to close reader. Exiting.");
+			this.getMaster().getNotifMngr().displayInternalError("Unable to close reader.");
+			try {
+				Thread.sleep(1000 * 30);
+			} catch (InterruptedException e) {
+				System.exit(3);
+			}
 			System.exit(3);
 		}
 		InternetCSVEntry lastEntry = null;
@@ -472,6 +486,12 @@ public class LogMaster {
 	}
 	public void setAppDataPath(String appDataPath) {
 		this.appDataPath = appDataPath;
+	}
+	public ConnectionMaster getMaster() {
+		return master;
+	}
+	public void setMaster(ConnectionMaster master) {
+		this.master = master;
 	}
 
 

@@ -46,7 +46,7 @@ public class ConnectionMaster {
 			System.exit(4);
 		};
 		setInterfaceCheck(new NetworkInterfaceCheck());
-		setLogger(new LogMaster());
+		setLogger(new LogMaster(this));
 		this.setNotifMngr(new SysNotificationManager(this));
 		SysNotificationManager.setUILookAndFeel();
 	}
@@ -61,7 +61,7 @@ public class ConnectionMaster {
 			System.exit(4);
 		};
 		setInterfaceCheck(new NetworkInterfaceCheck(localInterfaceAddress));
-		setLogger(new LogMaster());
+		setLogger(new LogMaster(this));
 		this.setNotifMngr(new SysNotificationManager(this));
 		SysNotificationManager.setUILookAndFeel();
 	}
@@ -74,7 +74,7 @@ public class ConnectionMaster {
 
 		
 		
-		System.out.println("Starting simpleInternetLog...");
+		System.out.println("Starting SimpleInternetLog...");
 		ConnectionMaster master = new ConnectionMaster();
 
 		master.getLogger().setAppDataPath(master.getAppDataFolder());
@@ -119,14 +119,14 @@ public class ConnectionMaster {
 			cmd = parser.parse(options, args);
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
-			formatter.printHelp("simpleInternetLog", helpHeader, options, "", true); 
+			formatter.printHelp("SimpleInternetLog", helpHeader, options, "", true); 
 
 			System.exit(1);
 			return;
 		}
 
 		if (cmd.hasOption("help")){ 
-			formatter.printHelp("simpleInternetLog", helpHeader, options, "", true); 
+			formatter.printHelp("SimpleInternetLog", helpHeader, options, "", true); 
 			System.exit(1); 
 			return;
 		}
