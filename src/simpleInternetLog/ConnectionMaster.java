@@ -1,7 +1,9 @@
 package simpleInternetLog;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -519,6 +521,21 @@ public class ConnectionMaster {
 	public void setInputFilename(String inputFilename) {
 		this.inputFilename = inputFilename;
 	}
+
+	public static String getBinPath() throws CannotFindPathException {
+		String binPath;
+		try {
+			File pto = null;
+			pto = new File(ConnectionMaster.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			binPath = pto.getAbsolutePath();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			throw new CannotFindPathException();
+		}
+		return binPath;
+
+	}
+
 	
 	public static Options getCMDOptions(){
 		// Command line arguments.

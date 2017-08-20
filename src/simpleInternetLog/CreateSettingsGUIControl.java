@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 public class CreateSettingsGUIControl implements ActionListener{
 
 	private ConnectionMaster master;
+	private ShortcutCreator linkCreator = null;
 
 	private JTextField checkRateTextField;
 	private Checkbox verboseCheckbox;
@@ -49,7 +50,13 @@ public class CreateSettingsGUIControl implements ActionListener{
 
 	public CreateSettingsGUIControl(ConnectionMaster master){
 		this.setMaster(master);
+		if (ShortcutCreator.canCreateShortcut()) {
+			try {
+				this.setLinkCreator(new ShortcutCreator(ConnectionMaster.getBinPath(), "SimpleInternetLogger"));
+			} catch (CannotFindPathException e) {
 
+			}
+		}
 	}
 	//TODO: write!
 	//See https://stackoverflow.com/questions/15605715/create-desktop-shortcut
@@ -440,15 +447,15 @@ public class Sc {
 		c.gridy = 8;       //row
 		pane.add(textField, c);
 
-		button = new JButton("Make Startup Shortcut");
-		button.setPreferredSize(new Dimension(150,25));
-		button.setActionCommand("makeStartup");
+		button = new JButton("Make Desktop Shortcut");
+		button.setPreferredSize(new Dimension(100,25));
+		button.setActionCommand("makeDesktopShortcut");
 		button.addActionListener(thisControl);
 		button.setVisible(thisControl.canMakeShortcut());
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.ipady = 10; 
-		c.ipadx = 0;
+		c.ipady = 10;  
+		c.ipadx = 50;
 		c.weightx = 1.0;	//request any extra horizontal space
 		c.weighty = 1.0;   //request any extra vertical space
 		c.anchor = GridBagConstraints.CENTER;
@@ -458,28 +465,49 @@ public class Sc {
 		c.gridy = 9;       //row
 		pane.add(button, c);
 
-		button = new JButton("Make Shortcut");
+		button = new JButton("Make Start Shortcut");
 		button.setPreferredSize(new Dimension(100,25));
 		button.setActionCommand("makeShortcut");
 		button.addActionListener(thisControl);
 		button.setVisible(thisControl.canMakeShortcut());
+		button.setToolTipText("Add shortcut to Start Menu");
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipady = 10;  
-		c.ipadx = 0;
+		c.ipadx = 30;
 		c.weightx = 1.0;	//request any extra horizontal space
 		c.weighty = 1.0;   //request any extra vertical space
 		c.anchor = GridBagConstraints.CENTER;
 		c.insets = new Insets(5,10,5,10);
-		c.gridx = 0;       //column
+		c.gridx = 1;       //column
 		c.gridwidth = 1;   //column width
-		c.gridy = 10;       //row
+		c.gridy = 9;       //row
+		pane.add(button, c);
+		
+		button = new JButton("Make Startup Shortcut");
+		button.setPreferredSize(new Dimension(150,25));
+		button.setActionCommand("makeStartup");
+		button.addActionListener(thisControl);
+		button.setVisible(thisControl.canMakeShortcut());
+		button.setToolTipText("Add shortcut to Startup folder (in Start Menu)");
+		c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.ipady = 10; 
+		c.ipadx = 30;
+		c.weightx = 1.0;	//request any extra horizontal space
+		c.weighty = 1.0;   //request any extra vertical space
+		c.anchor = GridBagConstraints.CENTER;
+		c.insets = new Insets(5,10,5,10);
+		c.gridx = 2;       //column
+		c.gridwidth = 1;   //column width
+		c.gridy = 9;       //row
 		pane.add(button, c);
 
 		button = new JButton("Save as Default");
 		button.setPreferredSize(new Dimension(125,25));
 		button.setActionCommand("saveDefault");
 		button.addActionListener(thisControl);
+		button.setToolTipText("Save settings as default");
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipady = 10;   
@@ -497,6 +525,7 @@ public class Sc {
 		button.setPreferredSize(new Dimension(40,25));
 		button.setActionCommand("save");
 		button.addActionListener(thisControl);
+		button.setToolTipText("Save settings for this instance");
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipady = 10;  
@@ -513,18 +542,20 @@ public class Sc {
 
 	}
 
-	public boolean canMakeShortcut() {
-		//TODO: write
-		return false;
+	private boolean canMakeShortcut() {
+		return this.getLinkCreator() != null;
 	}
 
-	public void makeStartupShortcut() {
-		//TODO: write
+	private void makeStartupShortcut() {
+		this.getLinkCreator().createStartupShortcut();
+	}
+	private void makeDesktopShortcut() {
+		this.getLinkCreator().createDesktopShortcut();
+	}
+	private void makeStartMenuShortcut() {
+		this.getLinkCreator().createStartMenuShortcut();
 	}
 
-	public void makeShortcut() {
-		//TODO: write
-	}
 
 	public static void main(String[] args){
 		//Schedule a job for the event dispatch thread:
@@ -542,51 +573,51 @@ public class Sc {
 		});
 	}
 
-	public ConnectionMaster getMaster() {
+	private ConnectionMaster getMaster() {
 		return master;
 	}
 
-	public void setMaster(ConnectionMaster master) {
+	private void setMaster(ConnectionMaster master) {
 		this.master = master;
 	}
 
-	public JTextField getCheckRateTextField() {
+	private JTextField getCheckRateTextField() {
 		return checkRateTextField;
 	}
 
-	public void setCheckRateTextField(JTextField checkRateTextField) {
+	private void setCheckRateTextField(JTextField checkRateTextField) {
 		this.checkRateTextField = checkRateTextField;
 	}
 
-	public Checkbox getVerboseCheckbox() {
+	private Checkbox getVerboseCheckbox() {
 		return verboseCheckbox;
 	}
 
-	public void setVerboseCheckbox(Checkbox verboseCheckbox) {
+	private void setVerboseCheckbox(Checkbox verboseCheckbox) {
 		this.verboseCheckbox = verboseCheckbox;
 	}
 
-	public JTextField getLocalAddressTextField() {
+	private JTextField getLocalAddressTextField() {
 		return localAddressTextField;
 	}
 
-	public void setLocalAddressTextField(JTextField localAddressTextField) {
+	private void setLocalAddressTextField(JTextField localAddressTextField) {
 		this.localAddressTextField = localAddressTextField;
 	}
 
-	public JTextArea getInternetAddressTextArea() {
+	private JTextArea getInternetAddressTextArea() {
 		return internetAddressTextArea;
 	}
 
-	public void setInternetAddressTextArea(JTextArea internetAddressTextArea) {
+	private void setInternetAddressTextArea(JTextArea internetAddressTextArea) {
 		this.internetAddressTextArea = internetAddressTextArea;
 	}
 
-	public JTextField getSavePathTextField() {
+	private JTextField getSavePathTextField() {
 		return savePathTextField;
 	}
 
-	public void setSavePathTextField(JTextField savePathTextField) {
+	private void setSavePathTextField(JTextField savePathTextField) {
 		this.savePathTextField = savePathTextField;
 	}
 
@@ -642,7 +673,9 @@ public class Sc {
 		if ("makeStartup".equals(e.getActionCommand())) {
 			this.makeStartupShortcut();
 		}else if( "makeShortcut".equals(e.getActionCommand())) {
-			this.makeShortcut();
+			this.makeStartMenuShortcut();
+		}else if( "makeDesktopShortcut".equals(e.getActionCommand())) {
+			this.makeDesktopShortcut();
 		}
 		else if( "saveDefault".equals(e.getActionCommand())) {
 			this.saveNewDefaults();
@@ -734,6 +767,18 @@ public class Sc {
 
 	private void setLastIterAutoConn(boolean lastIterAutoConn) {
 		this.lastIterAutoConn = lastIterAutoConn;
+	}
+
+
+
+	private ShortcutCreator getLinkCreator() {
+		return linkCreator;
+	}
+
+
+
+	private void setLinkCreator(ShortcutCreator linkCreator) {
+		this.linkCreator = linkCreator;
 	}
 
 
