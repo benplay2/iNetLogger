@@ -15,5 +15,6 @@ This is intended to run consistently in the background and log connection status
 
 Similar preceeding programs:
 internet-connectivity-monitor - Designed more for an on command use (not subtle GUI when logging, logs every log time even when no change in connection status).
+
 Net Uptime Monitor - Not free
 
