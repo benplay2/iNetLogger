@@ -12,3 +12,8 @@ There is a basic GUI interface that is accessed from the System notification are
 Simply download the *.jar* file and run it on your machine. An icon will show up in your system's notification area. The basic GUIs can be accessed by right-clicking on the icon.
 
 This is intended to run consistently in the background and log connection status (primarily to log connection problems to ISP).
+
+Similar preceeding programs:
+internet-connectivity-monitor - Designed more for an on command use (not subtle GUI when logging, logs every log time even when no change in connection status).
+Net Uptime Monitor - Not free
+
