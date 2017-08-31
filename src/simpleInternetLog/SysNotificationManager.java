@@ -26,7 +26,7 @@ public class SysNotificationManager {
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()){
 			SystemTray tray = SystemTray.getSystemTray();
-			Image image = Toolkit.getDefaultToolkit().createImage("dependentFiles" + File.separator + "icon_v6.png");
+			Image image = Toolkit.getDefaultToolkit().createImage(getClass().getResource("dependentFiles" + File.separator + "icon_v6.png"));
 			SysNotificationManager.setCurIcon(image);
 			trayIcon = new TrayIcon(image,"SimpleInternetLog");
 			trayIcon.setImageAutoSize(true);
