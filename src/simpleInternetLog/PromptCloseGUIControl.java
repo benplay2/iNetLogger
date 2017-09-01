@@ -48,7 +48,7 @@ public class PromptCloseGUIControl{
 		pane.add(label,BorderLayout.CENTER);
 		
 		JButton button = new JButton("Yes");
-		button.setPreferredSize(new Dimension(50,30));
+		button.setPreferredSize(new Dimension(100,50));
 		button.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -58,7 +58,7 @@ public class PromptCloseGUIControl{
 		pane.add(button, BorderLayout.WEST);
 		
 		button = new JButton("No");
-		button.setPreferredSize(new Dimension(50,30));
+		button.setPreferredSize(new Dimension(100,50));
 		button.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
