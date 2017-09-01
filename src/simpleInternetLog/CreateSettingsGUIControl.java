@@ -592,17 +592,19 @@ public class CreateSettingsGUIControl implements ActionListener{
 		}
 
 		boolean reachable = NetworkInterfaceCheck.isAddressReachable(localVal);
+		boolean autoChange = false;
 
 		if (this.isNetworkAddressAutomaticallyObtained() && localVal.equals(this.getOrigNetworkAddressString())) {
 			if (!this.isLastIterAutoConn()) {
 				this.setLastIterAutoConn(true);
 				this.getLocalAddressTextField().setBackground(this.getAutoConnectedColor());
+				autoChange = true;
 			}
-			if (reachable && !this.isLastLocalConnected()) {
+			if (reachable && (!this.isLastLocalConnected() || autoChange)) {
 				this.setLastLocalConnected(true);
 				this.getLocalAddressTextField().setToolTipText("Automatically determined, connected");
 				return;
-			} else if(!reachable && this.isLastLocalConnected()){
+			} else if(!reachable && (this.isLastLocalConnected() || autoChange)){
 				this.setLastLocalConnected(false);
 				this.getLocalAddressTextField().setToolTipText("Automatically determined, not connected");
 				return;
