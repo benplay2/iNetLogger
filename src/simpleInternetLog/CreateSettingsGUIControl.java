@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -580,22 +581,37 @@ public class CreateSettingsGUIControl implements ActionListener{
 	}
 
 	private void updateNetworkConnectionColor() {
-		updateNetworkConnectionColor(this.getLocalAddressTextField().getText().trim());
+		final CreateSettingsGUIControl thisControl = CreateSettingsGUIControl.this;
+		
+		//As this task takes some time, attempt to call it in the background. Unsure if this helps...
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				updateNetworkConnectionColor(thisControl.getLocalAddressTextField().getText().trim());
+			}
+		});
+		
 	}
 
 	private void updateNetworkConnectionColor(String localVal) {
-		if (localVal.isEmpty() && this.isLastLocalConnected()) {
+		
+		boolean autoConnBefore = this.isLastIterAutoConn();
+		if (localVal.isEmpty()) {
+			
+			if (!autoConnBefore) {
+				this.setLastIterAutoConn(true);
+				this.getLocalAddressTextField().setBackground(this.getAutoConnectedColor());
+			}
+			
 			this.setLastLocalConnected(false);
-			this.getLocalAddressTextField().setBackground(this.getAutoConnectedColor());
 			this.getLocalAddressTextField().setToolTipText("Will attempt to automatically determine");
 			return;
-		}
+		} 
 
 		boolean reachable = NetworkInterfaceCheck.isAddressReachable(localVal);
 		boolean autoChange = false;
 
 		if (this.isNetworkAddressAutomaticallyObtained() && localVal.equals(this.getOrigNetworkAddressString())) {
-			if (!this.isLastIterAutoConn()) {
+			if (!autoConnBefore) {
 				this.setLastIterAutoConn(true);
 				this.getLocalAddressTextField().setBackground(this.getAutoConnectedColor());
 				autoChange = true;
@@ -613,15 +629,15 @@ public class CreateSettingsGUIControl implements ActionListener{
 			this.setLastIterAutoConn(false);
 		}
 		
+		autoChange = autoConnBefore != this.isLastIterAutoConn();
 		
 		
-		
-		if (reachable && !this.isLastLocalConnected()) {
+		if (reachable && (!this.isLastLocalConnected() || autoChange)) {
 				this.setLastLocalConnected(true);
 				this.getLocalAddressTextField().setBackground(this.getConnectedColor());
 				this.getLocalAddressTextField().setToolTipText("Connected");
 			
-		} else if (!reachable && this.isLastLocalConnected()){
+		} else if (!reachable && (this.isLastLocalConnected() || autoChange)){
 				this.setLastLocalConnected(false);
 				this.getLocalAddressTextField().setBackground(this.getNotConnectedColor());
 				this.getLocalAddressTextField().setToolTipText("Not Connected");

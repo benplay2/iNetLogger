@@ -125,6 +125,21 @@ public class NetworkInterfaceCheck {
 			return false;
 		}
 	}
+	/*
+	 * Determine if the Internet address is reachable in the requested timeout time.
+	 * timout - MS
+	 */
+	public static boolean isAddressReachable(String address, int timeout) {
+		try {
+			return InetAddress.getByName(address).isReachable(timeout);
+		} catch (UnknownHostException e) {
+			//e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			//e.printStackTrace();
+			return false;
+		}
+	}
 	public static String getDefaultGatewayAddress() throws DefaultAddressLookupFailException {
 		boolean defTxtMatch = false;
 		boolean foundLine = false;
