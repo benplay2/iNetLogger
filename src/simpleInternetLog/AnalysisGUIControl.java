@@ -241,18 +241,49 @@ public class AnalysisGUIControl implements ActionListener{
         });
 	}
 
+	
+	private void loadLogFilenameInput() {
+		this.setLogFilename(this.getFilenameField().getText());
+	}
 
+	private void loadStartTimeInput() throws ParseException {
+		this.setStartTime(CSVEntry.getTimeFromString(this.getStartTimeField().getText()));
+		this.getStartTimeField().setText(CSVEntry.getCSVTimestamp(this.getStartTime()));
+	}
+	
+	private void loadEndTimeInput() throws ParseException {
+		this.setEndTime(CSVEntry.getTimeFromString(this.getEndTimeField().getText()));
+		this.getEndTimeField().setText(CSVEntry.getCSVTimestamp(this.getEndTime()));
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if ("analyze".equals(e.getActionCommand())) {
-			String result = null;
+			
+			//Import the inputs
+			boolean inputSuccess = true;
+			this.loadLogFilenameInput();
 			try {
-				result = iNetLogAnalyzer.analyzeINetLogger(this.getLogFilename(), false, this.getStartTime(), this.getEndTime());
-			} catch (IOException e1) {
+				this.loadStartTimeInput();
+				this.loadEndTimeInput();
+			} catch (ParseException e1) {
 				//e1.printStackTrace();
-				result = e1.toString();
+				this.getAnalysisResultsArea().setText(e1.toString());
+				inputSuccess = false;
 			}
-			this.getAnalysisResultsArea().setText(result);
+
+			if (inputSuccess) {
+
+				String result = null;
+				try {
+					result = iNetLogAnalyzer.analyzeINetLogger(this.getLogFilename(), false, this.getStartTime(), this.getEndTime());
+				} catch (IOException e1) {
+					//e1.printStackTrace();
+					result = e1.toString();
+				}
+				this.getAnalysisResultsArea().setText(result);
+			}
+
         } else if ("browse".equals(e.getActionCommand())){
         	//Create a file chooser
             JFileChooser fc = new JFileChooser();
@@ -266,25 +297,24 @@ public class AnalysisGUIControl implements ActionListener{
                 this.getFilenameField().setText(file.getAbsolutePath().toString());
             }
         } else if ("manualFilePath".equals(e.getActionCommand())){
-        	this.setLogFilename(this.getFilenameField().getText());
+        	this.loadLogFilenameInput();
             
         }else if ("changeStart".equals(e.getActionCommand())){
         	try {
-				this.setStartTime(CSVEntry.getTimeFromString(this.getStartTimeField().getText()));
-				this.getStartTimeField().setText(CSVEntry.getCSVTimestamp(this.getStartTime()));
+				this.loadStartTimeInput();
 			} catch (ParseException e1) {
 				//e1.printStackTrace();
 				this.getAnalysisResultsArea().setText(e1.toString());
 			}
         } else if ("changeEnd".equals(e.getActionCommand())){
         	try {
-				this.setEndTime(CSVEntry.getTimeFromString(this.getEndTimeField().getText()));
-				this.getEndTimeField().setText(CSVEntry.getCSVTimestamp(this.getEndTime()));
+				this.loadEndTimeInput();
 			} catch (ParseException e1) {
 				//e1.printStackTrace();
 				this.getAnalysisResultsArea().setText(e1.toString());
 			}
         }
+		
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
             	getMainFrame().repaint();
